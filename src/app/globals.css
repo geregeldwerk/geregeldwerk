@@ -128,6 +128,28 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* Accent previews. Default stays green. Set ACCENT_THEME=blue or orange. */
+.accent-blue {
+  --primary: #3147e6;
+  --primary-foreground: #f4f6ff;
+  --ring: #3147e6;
+}
+.dark.accent-blue {
+  --primary: #7c93ff;
+  --primary-foreground: #10131f;
+  --ring: #7c93ff;
+}
+.accent-orange {
+  --primary: #c2410c;
+  --primary-foreground: #fff7f3;
+  --ring: #c2410c;
+}
+.dark.accent-orange {
+  --primary: #ff6a1a;
+  --primary-foreground: #1a0c05;
+  --ring: #ff6a1a;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

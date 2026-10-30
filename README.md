@@ -13,7 +13,7 @@ npm run dev
 
 Open daarna [http://127.0.0.1:4317](http://127.0.0.1:4317).
 
-Zonder omgevingsvariabelen draait de app in **mock-modus**. Er is geen API-sleutel nodig. Tests:
+Zonder omgevingsvariabelen draait de app in **mock-modus**. Er is geen API-sleutel nodig. De accentkleur blijft groen. Zet `ACCENT_THEME` op `blue` of `orange` voor een preview en herstart daarna de server. Tests:
 
 ```bash
 npm test
