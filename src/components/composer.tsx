@@ -226,12 +226,12 @@ export function Composer() {
         }}
       >
         <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
-          <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">WhatsApp</span>
+          <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">WhatsApp</span>
           <span>binnenkomend bericht</span>
         </div>
         {text.trim() ? (
           <div className="mb-3 flex rise-in">
-            <p className="max-w-[90%] rounded-3xl rounded-bl-md bg-primary/15 px-4 py-3 text-sm leading-6 whitespace-pre-wrap">
+            <p className="max-w-[90%] rounded-3xl rounded-bl-md bg-primary/20 px-4 py-3 text-sm leading-6 whitespace-pre-wrap text-foreground">
               {text}
             </p>
           </div>

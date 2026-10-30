@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
 });
 
-const themeScript = `(function(){try{var t=localStorage.getItem("geregeldwerk-theme");var dark=t==="dark"||(!t&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",dark);}catch(e){}})();`;
+const themeScript = `(function(){try{var t=localStorage.getItem("geregeldwerk-theme");if(t==="light")document.documentElement.classList.remove("dark");else document.documentElement.classList.add("dark");}catch(e){}})();`;
 
 export const metadata: Metadata = {
   title: {
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="nl" suppressHydrationWarning className={`${geist.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="nl" suppressHydrationWarning className={`${geist.variable} ${geistMono.variable} dark h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         {children}
