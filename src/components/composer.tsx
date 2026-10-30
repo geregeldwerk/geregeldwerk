@@ -1,5 +1,6 @@
 "use client";
 
+import { Mic, Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -208,28 +209,39 @@ export function Composer() {
     <div className="flex flex-col gap-6">
       <div className="max-w-3xl">
         <p className="text-xs tracking-[0.16em] text-muted-foreground uppercase">Nieuw bericht</p>
-        <h1 className="mt-2 font-heading text-4xl tracking-tight text-balance">Wat heeft de klant gevraagd?</h1>
-        <p className="mt-2 font-heading text-lg text-primary">Jij doet het werk, wij doen de rest</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">Wat heeft de klant gevraagd?</h1>
+        <p className="mt-2 text-lg font-medium text-primary">Jij doet het werk, wij doen de rest</p>
         <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
-          Plak een WhatsApp of e-mail, of spreek het in. Geregeldwerk maakt er een conceptofferte van.
-          Prijzen verzin je zelf; de assistent laat die leeg. Versturen, facturen, bonnen en posts
-          lopen daarna via je permissies: automatisch binnen de grenzen, anders naar Toezicht.
+          Plak een appje of spreek het in. Je krijgt een conceptofferte. Prijzen laat ik leeg, die vul jij in.
         </p>
       </div>
 
-      <p className="rounded-xl bg-secondary px-4 py-3 text-sm leading-6">{providerNote}</p>
+      <p className="rounded-2xl bg-secondary px-4 py-3 text-sm leading-6">{providerNote}</p>
 
       <form
-        className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6"
+        className="rounded-3xl border border-border bg-card p-4 shadow-sm transition duration-200 sm:p-6"
         onSubmit={(event) => {
           event.preventDefault();
           void readMessage();
         }}
       >
-        <Label htmlFor="message">Bericht van de klant</Label>
+        <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
+          <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">WhatsApp</span>
+          <span>binnenkomend bericht</span>
+        </div>
+        {text.trim() ? (
+          <div className="mb-3 flex rise-in">
+            <p className="max-w-[90%] rounded-3xl rounded-bl-md bg-primary/15 px-4 py-3 text-sm leading-6 whitespace-pre-wrap">
+              {text}
+            </p>
+          </div>
+        ) : (
+          <p className="mb-3 text-sm text-muted-foreground">Nog geen appje. Plak er een, of tik een voorbeeld.</p>
+        )}
+        <Label htmlFor="message" className="sr-only">Bericht van de klant</Label>
         <Textarea
           id="message"
-          className="mt-2 min-h-40 text-base"
+          className="min-h-28 rounded-2xl text-base"
           value={text}
           onChange={(event) => {
             setText(event.target.value);
@@ -241,26 +253,28 @@ export function Composer() {
               void readMessage();
             }
           }}
-          placeholder="Klant Jansen in Hulst wil een nieuwe cv-ketel, ophangen en oude afvoeren, graag offerte"
+          placeholder="Plak hier het appje of de mail…"
         />
         <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
           <Button
             type="button"
-            className="h-10 px-4"
+            className="h-11 px-4"
             disabled={busy !== null || text.trim().length === 0}
             onClick={() => void readMessage()}
           >
-            {busy === "read" ? "Bericht lezen…" : "Maak conceptofferte"}
+            <Send aria-hidden />
+            {busy === "read" ? "Even lezen…" : "Maak concept"}
           </Button>
           <Button
             type="button"
             variant={listening ? "secondary" : "outline"}
-            className="h-10"
+            className="h-11"
             aria-pressed={listening}
             disabled={speechSupported === false}
             onClick={toggleSpeech}
           >
-            {listening ? "Stop opname" : "Spraak invoer"}
+            <Mic aria-hidden />
+            {listening ? "Stop" : "Spreek in"}
           </Button>
           {speechSupported === false ? (
             <p className="text-xs text-muted-foreground">
@@ -278,7 +292,7 @@ export function Composer() {
       </form>
 
       <div>
-        <h2 className="text-sm font-medium">Voorbeelden, duidelijk fictief</h2>
+        <h2 className="text-sm font-medium">Probeer een fictief appje</h2>
         <div className="mt-2 flex flex-wrap gap-2">
           {EXAMPLE_MESSAGES.map((example) => (
             <Button
@@ -301,10 +315,10 @@ export function Composer() {
       {error ? <ErrorNote message={error} issues={issues} /> : null}
 
       {review ? (
-        <section className="rounded-2xl border border-border bg-card p-4 sm:p-6" aria-live="polite">
+        <section className="rise-in rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6" aria-live="polite">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="font-heading text-2xl">Controleer de conceptofferte</h2>
+              <h2 className="text-2xl font-semibold tracking-tight">Check dit concept</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 Gelezen met {review.provider === "mock" ? "de mock-assistent" : "het externe taalmodel"}.
                 De regels zijn een voorstel. Bedragen blijven leeg tot jij ze invult.

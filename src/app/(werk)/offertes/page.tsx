@@ -39,7 +39,7 @@ export default function QuotesPage() {
     <div className="flex flex-col gap-5">
       <div>
         <p className="text-xs tracking-[0.16em] text-muted-foreground uppercase">Offertes</p>
-        <h1 className="mt-2 font-heading text-4xl tracking-tight">Concept, verstuurd, geaccepteerd</h1>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Jouw offertes</h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
           Een concept bewaar je direct. Versturen loopt via de permissie en verschijnt in Toezicht als het buiten de grenzen valt.
         </p>
@@ -78,7 +78,7 @@ export default function QuotesPage() {
             <li key={quote.id}>
               <Link
                 href={`/offertes/${quote.id}`}
-                className="block rounded-2xl border border-border bg-card px-4 py-4 transition-colors hover:border-primary/40"
+                className="block rounded-3xl border border-border bg-card px-4 py-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-primary/40"
               >
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium">{quote.number}</span>

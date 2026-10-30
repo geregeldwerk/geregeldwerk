@@ -86,7 +86,7 @@ export default function PermissionsPage() {
     <div className="flex flex-col gap-6">
       <div>
         <p className="text-xs tracking-[0.16em] text-muted-foreground uppercase">Permissies</p>
-        <h1 className="mt-2 font-heading text-4xl tracking-tight">Eenmalig toestemming, daarna automatisch</h1>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Eenmalig toestemming, daarna automatisch</h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
           Per actie kies je altijd vragen, automatisch binnen grenzen, of uit. Een wijziging geldt pas nadat je die hier goedkeurt.
           {hours === null ? "" : hours ? " Het is nu binnen de standaard werktijd." : " Het is nu buiten de standaard werktijd."}{" "}

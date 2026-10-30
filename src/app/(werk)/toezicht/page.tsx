@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ErrorNote, LoadingNote } from "@/components/feedback";
+import { SwipeApproval } from "@/components/swipe-approval";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -115,7 +116,7 @@ export default function OversightPage() {
     <div className="flex flex-col gap-6">
       <div>
         <p className="text-xs tracking-[0.16em] text-muted-foreground uppercase">Overzicht / Toezicht</p>
-        <h1 className="mt-2 font-heading text-4xl tracking-tight">Wat de assistent deed, en wat nog wacht</h1>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Wat er gebeurde, en wat nog wacht</h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
           Binnen een actieve permissie gebeurt het meteen en komt het in het log. Daarbuiten blijft het hier staan tot jij goedkeurt of afwijst.
         </p>
@@ -153,25 +154,34 @@ export default function OversightPage() {
             </div>
           </section>
           <section>
-            <h2 className="font-heading text-2xl">Wacht op goedkeuring</h2>
-            {data.pendingApprovals.length === 0 ? <p className="mt-2 text-sm text-muted-foreground">Geen open acties.</p> : null}
+            <h2 className="text-2xl font-semibold tracking-tight">Wacht op jouw tik</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Veeg naar rechts om goed te keuren, naar links om af te wijzen. Of tik de knop.</p>
+            {data.pendingApprovals.length === 0 ? <p className="mt-2 text-sm text-muted-foreground">Niets open. Lekker rustig.</p> : null}
             <ul className="mt-3 grid gap-3">
               {data.pendingApprovals.map((item) => (
-                <li key={item.id} className="rounded-2xl border border-border bg-card p-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs tracking-wide text-muted-foreground uppercase">{ACTION_LABEL[item.actionType as ActionType] ?? item.actionType}</span>
-                    {item.example ? <span className="text-xs">Voorbeeld</span> : null}
-                    <span className="text-xs text-muted-foreground">{item.actor.label}</span>
-                  </div>
-                  <p className="mt-1 font-medium">{item.summary}</p>
-                  <p className="text-sm text-muted-foreground">{item.reason}</p>
-                  {item.lastError ? <p className="mt-1 text-sm text-destructive">{item.lastError}</p> : null}
-                  <Label htmlFor={`comment-${item.id}`} className="mt-3">Opmerking, optioneel</Label>
-                  <Input id={`comment-${item.id}`} className="mt-1.5 h-10" value={comments[item.id] ?? ""} onChange={(event) => setComments({ ...comments, [item.id]: event.target.value })} />
-                  <div className="mt-3 flex gap-2">
-                    <Button type="button" className="h-10" disabled={busy} onClick={() => void decide(item.id, "goedgekeurd")}>Goedkeuren</Button>
-                    <Button type="button" variant="outline" className="h-10" disabled={busy} onClick={() => void decide(item.id, "afgewezen")}>Afwijzen</Button>
-                  </div>
+                <li key={item.id}>
+                  <SwipeApproval
+                    disabled={busy}
+                    onApprove={() => void decide(item.id, "goedgekeurd")}
+                    onReject={() => void decide(item.id, "afgewezen")}
+                  >
+                    <div className="rounded-3xl border border-border p-4">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs tracking-wide text-muted-foreground uppercase">{ACTION_LABEL[item.actionType as ActionType] ?? item.actionType}</span>
+                        {item.example ? <span className="text-xs">Voorbeeld</span> : null}
+                        <span className="text-xs text-muted-foreground">{item.actor.label}</span>
+                      </div>
+                      <p className="mt-1 font-medium">{item.summary}</p>
+                      <p className="text-sm text-muted-foreground">{item.reason}</p>
+                      {item.lastError ? <p className="mt-1 text-sm text-destructive">{item.lastError}</p> : null}
+                      <Label htmlFor={`comment-${item.id}`} className="mt-3">Opmerking, optioneel</Label>
+                      <Input id={`comment-${item.id}`} className="mt-1.5 h-11" value={comments[item.id] ?? ""} onChange={(event) => setComments({ ...comments, [item.id]: event.target.value })} />
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        <Button type="button" className="h-12" disabled={busy} onClick={() => void decide(item.id, "goedgekeurd")}>Goedkeuren</Button>
+                        <Button type="button" variant="outline" className="h-12" disabled={busy} onClick={() => void decide(item.id, "afgewezen")}>Afwijzen</Button>
+                      </div>
+                    </div>
+                  </SwipeApproval>
                 </li>
               ))}
             </ul>
