@@ -1,6 +1,6 @@
 # Geregeldwerk
 
-Geregeldwerk is een administratie-assistent voor Nederlandse zzp'ers, eerst voor installateurs en klusbedrijven. Slogan: *Jij doet het werk, wij het geregel.* Je plakt een WhatsApp of e-mail, of je spreekt hem in. De assistent leest er klant, plaats, werkzaamheden en ontbrekende gegevens uit en maakt een **conceptofferte**. Prijzen verzin of kopieert hij niet: die vul je zelf in.
+Geregeldwerk is een administratie-assistent voor Nederlandse zzp'ers, eerst voor installateurs en klusbedrijven. Slogan: *Jij doet het werk, wij regelen de rest!* Je plakt een WhatsApp of e-mail, of je spreekt hem in. De assistent leest er klant, plaats, werkzaamheden en ontbrekende gegevens uit en maakt een **conceptofferte**. Prijzen verzin of kopieert hij niet: die vul je zelf in.
 
 Dit is een lokale prototype van CodedByDefault. Er is geen productie-deploy en geen koppeling met Supabase, Vercel, WhatsApp of sociale netwerken.
 

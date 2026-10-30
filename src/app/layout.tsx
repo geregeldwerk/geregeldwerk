@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: "%s · Geregeldwerk",
   },
   description:
-    "Geregeldwerk helpt Nederlandse installateurs en klusbedrijven een appje of e-mail om te zetten in een conceptofferte. Jij doet het werk, wij het geregel.",
+    "Geregeldwerk helpt Nederlandse installateurs en klusbedrijven een appje of e-mail om te zetten in een conceptofferte. Jij doet het werk, wij regelen de rest!",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

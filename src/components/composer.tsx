@@ -209,7 +209,7 @@ export function Composer() {
       <div className="max-w-3xl">
         <p className="text-xs tracking-[0.16em] text-muted-foreground uppercase">Nieuw bericht</p>
         <h1 className="mt-2 font-heading text-4xl tracking-tight text-balance">Wat heeft de klant gevraagd?</h1>
-        <p className="mt-2 font-heading text-lg text-primary">Jij doet het werk, wij het geregel.</p>
+        <p className="mt-2 font-heading text-lg text-primary">Jij doet het werk, wij regelen de rest!</p>
         <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
           Plak een WhatsApp of e-mail, of spreek het in. Geregeldwerk maakt er een conceptofferte van.
           Prijzen verzin je zelf; de assistent laat die leeg. Versturen, facturen, bonnen en posts
