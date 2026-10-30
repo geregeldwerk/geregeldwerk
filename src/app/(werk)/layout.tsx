@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { BottomNav, Nav } from "@/components/nav";
 import { EmergencyBanner } from "@/components/emergency-banner";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -19,7 +20,9 @@ export default function WerkLayout({ children }: { children: React.ReactNode }) 
             </span>
           </Link>
           <div className="flex items-center gap-2">
-            <Nav />
+            <Suspense fallback={null}>
+              <Nav />
+            </Suspense>
             <ThemeToggle />
           </div>
         </div>
@@ -32,7 +35,9 @@ export default function WerkLayout({ children }: { children: React.ReactNode }) 
           Permissies
         </Link>
       </footer>
-      <BottomNav />
+      <Suspense fallback={null}>
+        <BottomNav />
+      </Suspense>
     </div>
   );
 }

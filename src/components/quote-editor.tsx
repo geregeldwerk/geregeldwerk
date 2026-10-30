@@ -340,7 +340,7 @@ export function QuoteEditor({
         <Button type="button" variant="outline" className="h-10" disabled={busy !== null} onClick={() => void onPdf()}>
           Download PDF
         </Button>
-        <Button type="button" variant="outline" className="h-10" render={<Link href={`/offertes/${quote.id}/afdrukken`} />}>
+        <Button type="button" variant="outline" className="h-10" nativeButton={false} render={<Link href={`/offertes/${quote.id}/afdrukken`} />}>
           Afdrukken
         </Button>
         <Button type="button" variant="ghost" className="h-10" onClick={() => setRemoveOpen(true)}>

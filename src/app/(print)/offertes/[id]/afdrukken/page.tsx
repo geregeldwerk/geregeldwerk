@@ -29,7 +29,7 @@ export default function PrintQuotePage() {
   return (
     <div className="min-h-full bg-neutral-200 px-4 py-6">
       <div className="no-print mx-auto mb-4 flex max-w-3xl flex-wrap gap-2">
-        <Button variant="outline" className="h-10" render={<Link href={`/offertes/${params.id}`} />}>
+        <Button variant="outline" className="h-10" nativeButton={false} render={<Link href={`/offertes/${params.id}`} />}>
           Terug
         </Button>
         <Button className="h-10" type="button" onClick={() => window.print()}>
