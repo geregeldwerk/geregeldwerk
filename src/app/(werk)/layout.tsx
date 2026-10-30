@@ -14,7 +14,7 @@ export default function WerkLayout({ children }: { children: React.ReactNode }) 
             </span>
             <span>
               <span className="block font-heading text-xl leading-none tracking-tight">Geregeldwerk</span>
-              <span className="text-xs text-muted-foreground">Jij doet het werk, wij regelen de rest!</span>
+              <span className="text-xs text-muted-foreground">Jij doet het werk, wij doen de rest</span>
             </span>
           </Link>
           <Nav />
