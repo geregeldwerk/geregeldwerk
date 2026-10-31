@@ -17,14 +17,16 @@ export async function POST(request: Request) {
     let effect = "fout";
     let reason = "Onbekend";
     let approvalId: string | null = null;
+    let invoiceId: string | null = null;
     await getRepository().update((data) => {
       const result = requestAction(data, { actor, summary, payload: body.payload as ActionPayload }, new Date());
       effect = result.effect;
       reason = result.reason;
       approvalId = result.approvalId;
+      invoiceId = result.invoiceId ?? null;
       copyStore(data, result.store);
     });
-    return Response.json({ effect, reason, approvalId });
+    return Response.json({ effect, reason, approvalId, invoiceId });
   } catch (error) {
     return fromUnknownError(error);
   }

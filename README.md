@@ -25,6 +25,36 @@ npm test
 
 De optionele OpenAI-adapter praat met een OpenAI-compatibel `/chat/completions`-endpoint. Antwoorden worden geschoond: verzonnen namen, plaatsen en **alle bedragen** gaan eraf. In deze prototype wordt die adapter niet aangeroepen.
 
+## E-facturatie (Peppol BIS Billing 3.0)
+
+Een **geaccepteerde** offerte kan een factuur worden. Dat loopt via de permissie Factuur maken (standaard: altijd vragen). Het factuurnummer is `FAC-jaar-volgnummer`, per bedrijf doorlopend vanaf het hoogste nummer van dat jaar. Een gat wordt niet hergebruikt.
+
+De factuur wordt UBL 2.1 volgens **Peppol BIS Billing 3.0.21** (EN 16931, verplicht sinds 17 augustus 2026). Ondersteund:
+
+- Nederland: btw 21%, 9% en 0%, endpoint scheme 0106 (KvK), 0190 (OIN) of 9944 (btw).
+- België: btw 21%, 12%, 6% en 0%, endpoint scheme 0208 (ondernemingsnummer) of 9925 (btw).
+- Verlegde btw / medecontractant (categorie AE, `VATEX-EU-AE`).
+- Intracommunautaire levering tussen NL en BE (categorie K, `VATEX-EU-IC`).
+
+Op de factuurpagina download je de UBL-XML en zie je de verzendstatus. Verzenden gebruikt standaard de **mock Access Point** (`GEREGELDWERK_PEPPOL_PROVIDER=mock`, `sandbox` is dezelfde simulator). Er wordt geen netwerk aangeroepen, er is geen account en er staat geen API-sleutel in deze prototype.
+
+De XML wordt gecontroleerd tegen een afgebakende set EN 16931- en Peppol-regels (verplichte velden, endpoints, btw-categorieën, bedragen, NL- en BE-identifierformaten). Een ongeldige factuur krijgt een foutmelding in het Nederlands, met het regelnummer. De volledige officiële Schematron/XSD draait hier niet mee: die heeft een XSLT 2-processor en de CEN/Peppol-artefacten, en deze app roept geen externe validator aan.
+
+### Access Points om later te kiezen
+
+Sluit er nog geen een aan. Geschikte kandidaten voor NL/BE:
+
+| Provider | Aandachtspunt |
+| --- | --- |
+| [Storecove](https://www.storecove.com/) | NL en BE, REST en een sandbox. Je registreert het deelnemers-ID (KvK of ondernemingsnummer) bij hen. |
+| [eConnect](https://econnect.eu/) | Nederlands Access Point, veel gebruikt voor Peppol in NL. |
+| [Tradeinterop](https://www.tradeinterop.com/) | Nederlands Access Point. |
+| [Recommand](https://www.recommand.eu/) | Belgisch, gericht op de B2B-verplichting. |
+| [Billit](https://www.billit.eu/) | Belgisch platform met Peppol. |
+| [Unifiedpost / Flowin](https://www.unifiedpost.com/) | Belgisch Access Point, vaak via een bestaand pakket. |
+
+Voor live gebruik heb je een geaccrediteerd Access Point, een contract, een sandbox-sleutel buiten deze repo, registratie van het deelnemers-ID in het SMP, en een testronde op het Peppol-testnet. In België is Peppol voor B2B verplicht; in Nederland wordt de e-factuur verplicht richting 2030. Tot die keuze blijft de provider `mock`.
+
 ## Permissies
 
 De eigenaar geeft **eenmalig** per actie toestemming. Daarna handelt Geregeldwerk binnen die regel zelf.
@@ -77,12 +107,14 @@ Wel:
 - Conceptofferte controleren, prijzen invullen, bewaren, als PDF downloaden of afdrukken.
 - Status concept, verstuurd en geaccepteerd.
 - Permissies, wachtrij, noodstop, auditlog en JSON-export.
-- Gesimuleerde factuur, bon, afspraak en social post.
+- Factuur uit een geaccepteerde offerte, met Peppol BIS Billing 3.0 UBL en verzending via de mock.
+- Gesimuleerde bon, afspraak en social post.
 - Herinneringen.
 
 Niet:
 
 - Echt mailen, WhatsApp, boekhouden of posten op sociale netwerken.
-- Echte betalingen, kvk-controle of btw-aangifte.
+- Een echt Peppol Access Point, kvk-controle of btw-aangifte.
+- Echte betalingen.
 - Een tweede persoon als verplichte fiatteur. Jij bent in deze demo de eigenaar én de fiatteur; het verschil is de expliciete goedkeuring, niet een apart account.
 - Productie-deploy.

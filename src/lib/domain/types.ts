@@ -12,6 +12,18 @@ export const UNITS = ["stuk", "uur", "meter", "m²", "set", "post"] as const;
 
 export type Unit = (typeof UNITS)[number];
 
+export const COUNTRIES = ["NL", "BE"] as const;
+
+export type CountryCode = (typeof COUNTRIES)[number];
+
+export const VAT_SCENARIOS = ["standaard", "verlegd", "intracommunautair"] as const;
+
+export type VatScenario = (typeof VAT_SCENARIOS)[number];
+
+export const PEPPOL_SEND_STATUSES = ["niet_verstuurd", "verstuurd_mock", "mislukt"] as const;
+
+export type PeppolSendStatus = (typeof PEPPOL_SEND_STATUSES)[number];
+
 export interface ExtractedLine {
   description: string;
   quantity: number | null;
@@ -60,6 +72,19 @@ export interface Quote {
   lines: QuoteLine[];
   notes: string;
   vatRate: number;
+  /** Land van de koper. Ontbreekt bij oudere offertes en telt dan als NL. */
+  customerCountry?: CountryCode;
+  customerStreet?: string;
+  customerPostalCode?: string;
+  customerCity?: string;
+  customerVat?: string;
+  /** Leeg: afgeleid uit KvK, ondernemingsnummer of btw-nummer. */
+  customerEndpointScheme?: string;
+  customerEndpointId?: string;
+  /** KvK (NL) of ondernemingsnummer (BE) van de koper. */
+  customerLegalId?: string;
+  buyerReference?: string;
+  vatScenario?: VatScenario;
   createdAt: string;
   updatedAt: string;
 }
@@ -89,6 +114,12 @@ export interface CompanySettings {
   quoteValidityDays: number;
   defaultVatRate: number;
   footerNote: string;
+  /** Land van het eigen bedrijf. Ontbreekt bij oudere gegevens en telt dan als NL. */
+  country?: CountryCode;
+  /** Belgisch ondernemingsnummer, alleen nodig als country BE is. */
+  enterpriseNumber?: string;
+  /** Betaaltermijn van een factuur, in dagen. */
+  paymentTermDays?: number;
 }
 
 export const ACTION_TYPES = [
@@ -202,6 +233,14 @@ export interface PermissionProposal {
   example: boolean;
 }
 
+export interface InvoiceLineSnapshot {
+  description: string;
+  quantity: number;
+  unit: string;
+  unitPriceCents: number;
+  lineCents: number;
+}
+
 export interface Invoice {
   id: string;
   number: string;
@@ -213,6 +252,25 @@ export interface Invoice {
   createdAt: string;
   example: boolean;
   simulated: true;
+  issueDate?: string;
+  dueDate?: string;
+  vatScenario?: VatScenario;
+  vatRate?: number;
+  sellerCountry?: CountryCode;
+  buyerCountry?: CountryCode;
+  sellerName?: string;
+  buyerReference?: string;
+  sellerEndpointScheme?: string;
+  sellerEndpointId?: string;
+  buyerEndpointScheme?: string;
+  buyerEndpointId?: string;
+  lines?: InvoiceLineSnapshot[];
+  ublXml?: string;
+  sendStatus?: PeppolSendStatus;
+  sendProvider?: string | null;
+  transmissionId?: string | null;
+  sentAt?: string | null;
+  sendMessage?: string | null;
 }
 
 export interface Expense {

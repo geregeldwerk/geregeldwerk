@@ -26,6 +26,7 @@ export default function OversightPage() {
   const [data, setData] = useState<OversightPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [invoiceHref, setInvoiceHref] = useState<string | null>(null);
   const [outcome, setOutcome] = useState<AuditOutcome | "alles">("alles");
   const [actor, setActor] = useState<"alles" | "ai" | "mens">("alles");
   const [action, setAction] = useState<string>("alles");
@@ -99,11 +100,12 @@ export default function OversightPage() {
     setBusy(true);
     setNotice(null);
     try {
-      const result = await api<{ effect: string; reason: string }>(`/api/wachtrij/${id}`, {
+      const result = await api<{ effect: string; reason: string; invoiceId?: string | null }>(`/api/wachtrij/${id}`, {
         method: "POST",
         body: JSON.stringify({ decision, comment: comments[id] ?? "" }),
       });
       setNotice(result.reason);
+      setInvoiceHref(result.invoiceId ? `/facturen/${result.invoiceId}` : null);
       load();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Besluit mislukt.");
@@ -122,7 +124,17 @@ export default function OversightPage() {
         </p>
       </div>
       {error ? <ErrorNote message={error} onRetry={load} /> : null}
-      {notice ? <p className="rounded-xl bg-secondary px-4 py-3 text-sm" role="status">{notice}</p> : null}
+      {notice ? (
+        <p className="rounded-xl bg-secondary px-4 py-3 text-sm" role="status">
+          {notice}
+          {invoiceHref ? (
+            <>
+              {" "}
+              <Link href={invoiceHref} className="underline">Open de factuur.</Link>
+            </>
+          ) : null}
+        </p>
+      ) : null}
       {data === null && !error ? <LoadingNote label="Toezicht laden…" /> : null}
       {data ? (
         <>

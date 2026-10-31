@@ -22,7 +22,8 @@ export async function GET(_request: Request, context: RouteContext) {
       "quoteId" in item.payload &&
       item.payload.quoteId === id,
   );
-  return Response.json({ quote, pendingApprovals });
+  const invoice = data.invoices.find((item) => item.quoteId === id) ?? null;
+  return Response.json({ quote, pendingApprovals, invoice });
 }
 
 export async function PATCH(request: Request, context: RouteContext) {

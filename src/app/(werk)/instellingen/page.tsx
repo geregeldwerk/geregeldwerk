@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/client/api";
 import type { CompanySettings } from "@/lib/domain/types";
+import { vatPercentsForCountry } from "@/lib/peppol/spec";
 import { settingsLookPlaceholder } from "@/lib/storage/seed";
 
 export default function SettingsPage() {
@@ -63,7 +64,7 @@ export default function SettingsPage() {
         <p className="text-xs tracking-[0.16em] text-muted-foreground uppercase">Instellingen</p>
         <h1 className="mt-2 font-heading text-4xl tracking-tight">Jouw bedrijfsgegevens</h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Dit zijn placeholders voor op de offerte. Ze komen op de PDF en de afdruk.{" "}
+          Dit zijn placeholders voor op de offerte en de e-factuur. Ze komen op de PDF, de afdruk en de Peppol-UBL.{" "}
           <Link href="/permissies" className="underline">Permissies</Link> verander je niet hier: dat voorstel moet je expliciet goedkeuren.
         </p>
       </div>
@@ -92,7 +93,28 @@ export default function SettingsPage() {
         <Field label="Plaats" id="city" value={settings.city} onChange={(value) => patch("city", value)} />
         <Field label="Telefoon" id="phone" value={settings.phone} onChange={(value) => patch("phone", value)} />
         <Field label="E-mail" id="email" value={settings.email} onChange={(value) => patch("email", value)} />
+        <div>
+          <Label htmlFor="country">Land</Label>
+          <select
+            id="country"
+            className="mt-1.5 h-10 w-full rounded-lg border border-input bg-transparent px-2 text-sm"
+            value={settings.country === "BE" ? "BE" : "NL"}
+            onChange={(event) => {
+              const country = event.target.value === "BE" ? "BE" : "NL";
+              const allowed = vatPercentsForCountry(country);
+              const current = Math.round(settings.defaultVatRate * 100);
+              patch("country", country);
+              if (!allowed.includes(current)) patch("defaultVatRate", 0.21);
+            }}
+          >
+            <option value="NL">Nederland</option>
+            <option value="BE">België</option>
+          </select>
+        </div>
         <Field label="KvK" id="kvk" value={settings.kvk} onChange={(value) => patch("kvk", value)} />
+        {settings.country === "BE" ? (
+          <Field label="Ondernemingsnummer" id="enterpriseNumber" value={settings.enterpriseNumber ?? ""} onChange={(value) => patch("enterpriseNumber", value)} />
+        ) : null}
         <Field label="Btw" id="btw" value={settings.btw} onChange={(value) => patch("btw", value)} />
         <Field label="IBAN" id="iban" value={settings.iban} onChange={(value) => patch("iban", value)} />
         <div>
@@ -102,10 +124,14 @@ export default function SettingsPage() {
         <div>
           <Label htmlFor="vat">Standaard btw</Label>
           <select id="vat" className="mt-1.5 h-10 w-full rounded-lg border border-input bg-transparent px-2 text-sm" value={String(settings.defaultVatRate)} onChange={(event) => patch("defaultVatRate", Number(event.target.value))}>
-            <option value="0.21">21%</option>
-            <option value="0.09">9%</option>
-            <option value="0">0%</option>
+            {vatPercentsForCountry(settings.country === "BE" ? "BE" : "NL").map((percent) => (
+              <option key={percent} value={String(percent / 100)}>{percent}%</option>
+            ))}
           </select>
+        </div>
+        <div>
+          <Label htmlFor="paymentTerm">Betaaltermijn factuur (dagen)</Label>
+          <Input id="paymentTerm" className="mt-1.5 h-10" type="number" min={1} max={365} value={settings.paymentTermDays ?? 14} onChange={(event) => patch("paymentTermDays", Number(event.target.value))} />
         </div>
         <div className="sm:col-span-2">
           <Label htmlFor="footer">Tekst onderaan de offerte</Label>

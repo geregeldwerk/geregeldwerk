@@ -28,8 +28,25 @@ export function createSeedSettings(): CompanySettings {
     phone: "0114-000000",
     quoteValidityDays: 30,
     defaultVatRate: 0.21,
+    country: "NL",
+    enterpriseNumber: "",
+    paymentTermDays: 14,
     footerNote:
       "Fictieve voorbeeldgegevens. Prijzen op een offerte komen van jou, niet van de assistent.",
+  };
+}
+
+export function normalizeSettings(input: Partial<CompanySettings> | undefined): CompanySettings {
+  const seed = createSeedSettings();
+  return {
+    ...seed,
+    ...input,
+    country: input?.country === "BE" ? "BE" : "NL",
+    enterpriseNumber: typeof input?.enterpriseNumber === "string" ? input.enterpriseNumber : "",
+    paymentTermDays:
+      typeof input?.paymentTermDays === "number" && Number.isInteger(input.paymentTermDays)
+        ? input.paymentTermDays
+        : seed.paymentTermDays,
   };
 }
 

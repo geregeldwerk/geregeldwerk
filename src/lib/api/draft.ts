@@ -1,5 +1,6 @@
 import { QuoteInputError, type DraftQuoteInput } from "@/lib/domain/quote";
-import type { CompanySettings, Task } from "@/lib/domain/types";
+import type { CompanySettings, CountryCode, Task, VatScenario } from "@/lib/domain/types";
+import { percentFromRate, VAT_PERCENTS } from "@/lib/peppol/spec";
 
 export function parseDraftBody(body: unknown): DraftQuoteInput {
   const record = expectRecord(body);
@@ -14,6 +15,16 @@ export function parseDraftBody(body: unknown): DraftQuoteInput {
     notes: stringField(record.notes, 2000),
     vatRate: typeof record.vatRate === "number" ? record.vatRate : 0.21,
     lines: Array.isArray(record.lines) ? record.lines.map(parseLine) : [],
+    customerCountry: countryField(record.customerCountry),
+    customerStreet: optionalString(record, "customerStreet", 160),
+    customerPostalCode: optionalString(record, "customerPostalCode", 16),
+    customerCity: optionalString(record, "customerCity", 80),
+    customerVat: optionalString(record, "customerVat", 24),
+    customerEndpointScheme: optionalString(record, "customerEndpointScheme", 8),
+    customerEndpointId: optionalString(record, "customerEndpointId", 32),
+    customerLegalId: optionalString(record, "customerLegalId", 20),
+    buyerReference: optionalString(record, "buyerReference", 80),
+    vatScenario: scenarioField(record.vatScenario),
   };
 }
 
@@ -39,6 +50,15 @@ export function parseSettings(body: unknown): CompanySettings {
   if (!Number.isInteger(validity) || validity < 1 || validity > 365) {
     throw new QuoteInputError("Geldigheid moet tussen 1 en 365 dagen liggen.");
   }
+  const country = countryField(record.country) ?? "NL";
+  const defaultVatRate = typeof record.defaultVatRate === "number" ? record.defaultVatRate : 0.21;
+  if (!VAT_PERCENTS[country].includes(percentFromRate(defaultVatRate))) {
+    throw new QuoteInputError(
+      country === "BE"
+        ? "Voor een Belgisch bedrijf is alleen 21%, 12%, 6% of 0% toegestaan."
+        : "Voor een Nederlands bedrijf is alleen 21%, 9% of 0% toegestaan.",
+    );
+  }
   return {
     companyName: stringField(record.companyName, 160),
     contactName: stringField(record.contactName, 160),
@@ -51,8 +71,11 @@ export function parseSettings(body: unknown): CompanySettings {
     email: stringField(record.email, 160),
     phone: stringField(record.phone, 40),
     quoteValidityDays: validity,
-    defaultVatRate: typeof record.defaultVatRate === "number" ? record.defaultVatRate : 0.21,
+    defaultVatRate,
     footerNote: stringField(record.footerNote, 400),
+    country,
+    enterpriseNumber: "enterpriseNumber" in record ? stringField(record.enterpriseNumber, 20) : "",
+    paymentTermDays: paymentTermField(record.paymentTermDays),
   };
 }
 
@@ -126,6 +149,31 @@ function dateField(value: unknown): string | null {
     throw new QuoteInputError("Datum moet jjjj-mm-dd zijn, of leeg.");
   }
   return value;
+}
+
+function countryField(value: unknown): CountryCode | undefined {
+  if (value == null || value === "") return undefined;
+  if (value === "NL" || value === "BE") return value;
+  throw new QuoteInputError("Land moet NL of BE zijn.");
+}
+
+function scenarioField(value: unknown): VatScenario | undefined {
+  if (value == null || value === "") return undefined;
+  if (value === "standaard" || value === "verlegd" || value === "intracommunautair") return value;
+  throw new QuoteInputError("Btw-scenario is ongeldig.");
+}
+
+function optionalString(record: Record<string, unknown>, key: string, max: number): string | undefined {
+  if (!(key in record)) return undefined;
+  return stringField(record[key], max);
+}
+
+function paymentTermField(value: unknown): number {
+  const days = typeof value === "number" && Number.isFinite(value) ? value : 14;
+  if (!Number.isInteger(days) || days < 1 || days > 365) {
+    throw new QuoteInputError("Betaaltermijn moet tussen 1 en 365 dagen liggen.");
+  }
+  return days;
 }
 
 function optionalId(value: unknown): string | null {

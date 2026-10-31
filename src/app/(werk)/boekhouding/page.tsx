@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { api } from "@/lib/client/api";
 import { formatEuro, parseEuroToCents } from "@/lib/domain/money";
 import type { Appointment, Expense, Invoice } from "@/lib/domain/types";
+import { SEND_STATUS_LABEL } from "@/lib/peppol/spec";
 
 export default function BooksPage() {
   const [invoices, setInvoices] = useState<Invoice[] | null>(null);
@@ -67,7 +68,7 @@ export default function BooksPage() {
         <p className="text-xs tracking-[0.16em] text-muted-foreground uppercase">Boekhouding</p>
         <h1 className="mt-2 font-heading text-4xl tracking-tight">Facturen, bonnen, afspraken</h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Alles is lokaal en gesimuleerd. Een bon onder het maximum wordt direct geboekt. Daarboven wacht hij op jouw goedkeuring.{" "}
+          Facturen zijn Peppol-concepten op deze computer. Verzenden gaat alleen via de mock, niet naar een echt Access Point. Een bon onder het maximum wordt direct geboekt. Daarboven wacht hij op jouw goedkeuring.{" "}
           <Link className="underline" href="/taken">Herinneringen staan bij taken.</Link>
         </p>
       </div>
@@ -99,9 +100,13 @@ export default function BooksPage() {
         {invoices && invoices.length === 0 ? <p className="mt-2 text-sm text-muted-foreground">Nog geen facturen. Maak er een vanaf een verstuurde offerte.</p> : null}
         <ul className="mt-3 grid gap-2">
           {(invoices ?? []).map((invoice) => (
-            <li key={invoice.id} className="rounded-xl border border-border bg-card px-4 py-3 text-sm">
-              <p className="font-medium">{invoice.number} · {invoice.customerName}{invoice.example ? " · voorbeeld" : ""}</p>
-              <p className="text-muted-foreground">{formatEuro(invoice.totalCents)} incl. btw · gesimuleerd</p>
+            <li key={invoice.id}>
+              <Link href={`/facturen/${invoice.id}`} className="block rounded-xl border border-border bg-card px-4 py-3 text-sm hover:border-primary/40">
+                <p className="font-medium">{invoice.number} · {invoice.customerName}{invoice.example ? " · voorbeeld" : ""}</p>
+                <p className="text-muted-foreground">
+                  {formatEuro(invoice.totalCents)} incl. btw · {SEND_STATUS_LABEL[invoice.sendStatus ?? "niet_verstuurd"]}
+                </p>
+              </Link>
             </li>
           ))}
         </ul>

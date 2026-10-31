@@ -1,11 +1,13 @@
 import { calculateTotals } from "@/lib/domain/money";
 import {
   QUOTE_STATUSES,
+  type CountryCode,
   type Extraction,
   type Quote,
   type QuoteLine,
   type QuoteReview,
   type QuoteStatus,
+  type VatScenario,
 } from "@/lib/domain/types";
 
 export class QuoteInputError extends Error {
@@ -38,6 +40,16 @@ export interface DraftQuoteInput {
   vatRate: number;
   lines: DraftLineInput[];
   example?: boolean;
+  customerCountry?: CountryCode;
+  customerStreet?: string;
+  customerPostalCode?: string;
+  customerCity?: string;
+  customerVat?: string;
+  customerEndpointScheme?: string;
+  customerEndpointId?: string;
+  customerLegalId?: string;
+  buyerReference?: string;
+  vatScenario?: VatScenario;
 }
 
 export function assertQuoteStatus(value: string): QuoteStatus {
@@ -127,6 +139,16 @@ export function buildDraftQuote(
     lines,
     notes: "",
     vatRate: options.vatRate,
+    customerCountry: "NL",
+    customerStreet: "",
+    customerPostalCode: "",
+    customerCity: "",
+    customerVat: "",
+    customerEndpointScheme: "",
+    customerEndpointId: "",
+    customerLegalId: "",
+    buyerReference: "",
+    vatScenario: "standaard",
     createdAt: now.toISOString(),
     updatedAt: now.toISOString(),
   };
@@ -150,6 +172,7 @@ export function createQuote(input: DraftQuoteInput, existingNumbers: readonly st
     lines,
     notes: input.notes.trim(),
     vatRate,
+    ...peppolFields(input),
     createdAt: now.toISOString(),
     updatedAt: now.toISOString(),
   };
@@ -171,6 +194,16 @@ export function updateQuote(
     notes: patch.notes?.trim() ?? existing.notes,
     vatRate: patch.vatRate == null ? existing.vatRate : normalizeVat(patch.vatRate),
     lines: patch.lines ? patch.lines.map((line, index) => normalizeLine(line, index)) : existing.lines,
+    customerCountry: patch.customerCountry ?? existing.customerCountry,
+    customerStreet: patch.customerStreet?.trim() ?? existing.customerStreet,
+    customerPostalCode: patch.customerPostalCode?.trim() ?? existing.customerPostalCode,
+    customerCity: patch.customerCity?.trim() ?? existing.customerCity,
+    customerVat: patch.customerVat?.trim() ?? existing.customerVat,
+    customerEndpointScheme: patch.customerEndpointScheme?.trim() ?? existing.customerEndpointScheme,
+    customerEndpointId: patch.customerEndpointId?.trim() ?? existing.customerEndpointId,
+    customerLegalId: patch.customerLegalId?.trim() ?? existing.customerLegalId,
+    buyerReference: patch.buyerReference?.trim() ?? existing.buyerReference,
+    vatScenario: patch.vatScenario ?? existing.vatScenario,
     updatedAt: now.toISOString(),
   };
 
@@ -189,6 +222,33 @@ export function updateQuote(
   }
 
   return next;
+}
+
+function peppolFields(input: DraftQuoteInput): Pick<
+  Quote,
+  | "customerCountry"
+  | "customerStreet"
+  | "customerPostalCode"
+  | "customerCity"
+  | "customerVat"
+  | "customerEndpointScheme"
+  | "customerEndpointId"
+  | "customerLegalId"
+  | "buyerReference"
+  | "vatScenario"
+> {
+  return {
+    customerCountry: input.customerCountry ?? "NL",
+    customerStreet: input.customerStreet?.trim() ?? "",
+    customerPostalCode: input.customerPostalCode?.trim() ?? "",
+    customerCity: input.customerCity?.trim() ?? "",
+    customerVat: input.customerVat?.trim() ?? "",
+    customerEndpointScheme: input.customerEndpointScheme?.trim() ?? "",
+    customerEndpointId: input.customerEndpointId?.trim() ?? "",
+    customerLegalId: input.customerLegalId?.trim() ?? "",
+    buyerReference: input.buyerReference?.trim() ?? "",
+    vatScenario: input.vatScenario ?? "standaard",
+  };
 }
 
 function normalizeVat(vatRate: number): number {

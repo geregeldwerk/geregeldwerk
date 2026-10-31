@@ -22,16 +22,19 @@ import { ApiError, api } from "@/lib/client/api";
 import { linesFromQuote, toDraftLines, type LineDraft } from "@/lib/domain/lines";
 import { calculateTotals, formatEuro } from "@/lib/domain/money";
 import { canMarkReady, reviewQuote } from "@/lib/domain/quote";
-import type { Approval, CompanySettings, Quote } from "@/lib/domain/types";
+import type { Approval, CompanySettings, Invoice, Quote, VatScenario } from "@/lib/domain/types";
+import { ENDPOINT_SCHEMES, SCENARIO_LABEL, vatPercentsForCountry } from "@/lib/peppol/spec";
 
 export function QuoteEditor({
   initialQuote,
   pending,
   settings,
+  invoice,
 }: {
   initialQuote: Quote;
   pending: Approval[];
   settings: CompanySettings;
+  invoice: Invoice | null;
 }) {
   const router = useRouter();
   const [quote, setQuote] = useState(initialQuote);
@@ -44,6 +47,16 @@ export function QuoteEditor({
   const [jobDescription, setJobDescription] = useState(initialQuote.jobDescription);
   const [notes, setNotes] = useState(initialQuote.notes);
   const [vatRate, setVatRate] = useState(initialQuote.vatRate);
+  const [customerCountry, setCustomerCountry] = useState<"NL" | "BE">(initialQuote.customerCountry === "BE" ? "BE" : "NL");
+  const [customerStreet, setCustomerStreet] = useState(initialQuote.customerStreet ?? "");
+  const [customerPostalCode, setCustomerPostalCode] = useState(initialQuote.customerPostalCode ?? "");
+  const [customerCity, setCustomerCity] = useState(initialQuote.customerCity ?? "");
+  const [customerVat, setCustomerVat] = useState(initialQuote.customerVat ?? "");
+  const [customerLegalId, setCustomerLegalId] = useState(initialQuote.customerLegalId ?? "");
+  const [customerEndpointScheme, setCustomerEndpointScheme] = useState(initialQuote.customerEndpointScheme ?? "");
+  const [customerEndpointId, setCustomerEndpointId] = useState(initialQuote.customerEndpointId ?? "");
+  const [buyerReference, setBuyerReference] = useState(initialQuote.buyerReference ?? "");
+  const [vatScenario, setVatScenario] = useState<VatScenario>(initialQuote.vatScenario ?? "standaard");
   const [when, setWhen] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -51,6 +64,9 @@ export function QuoteEditor({
   const [issues, setIssues] = useState<string[]>([]);
   const [removeOpen, setRemoveOpen] = useState(false);
 
+  const effectiveVat = vatScenario === "standaard" ? vatRate : 0;
+  const sellerCountry = settings.country === "BE" ? "BE" : "NL";
+  const vatChoices = vatPercentsForCountry(sellerCountry);
   const draftPreview = previewLines(lines);
   const review = draftPreview
     ? reviewQuote({
@@ -61,10 +77,10 @@ export function QuoteEditor({
         customerEmail: email,
         requestedDate,
         lines: draftPreview,
-        vatRate,
+        vatRate: effectiveVat,
       })
     : null;
-  const totals = draftPreview ? calculateTotals(draftPreview, vatRate) : null;
+  const totals = draftPreview ? calculateTotals(draftPreview, effectiveVat) : null;
 
   async function persist(status?: Quote["status"]) {
     const payloadLines = toDraftLines(lines);
@@ -79,9 +95,19 @@ export function QuoteEditor({
         jobDescription,
         requestedDate,
         notes,
-        vatRate,
+        vatRate: vatScenario === "standaard" ? vatRate : 0,
         lines: payloadLines,
         status,
+        customerCountry,
+        customerStreet,
+        customerPostalCode,
+        customerCity,
+        customerVat,
+        customerLegalId,
+        customerEndpointScheme,
+        customerEndpointId,
+        buyerReference,
+        vatScenario,
       }),
     });
     setQuote(result.quote);
@@ -143,15 +169,20 @@ export function QuoteEditor({
     setBusy("factuur");
     setError(null);
     try {
-      const result = await api<{ effect: string; reason: string }>("/api/acties", {
+      await persist();
+      const result = await api<{ effect: string; reason: string; invoiceId?: string | null }>("/api/acties", {
         method: "POST",
         body: JSON.stringify({ actor: "mens", payload: { type: "factuur_maken", quoteId: quote.id } }),
       });
-      setNotice(
-        result.effect === "uitgevoerd"
-          ? "Factuur gesimuleerd en opgeslagen."
-          : `${result.reason} Keur de factuur goed in Toezicht.`,
-      );
+      if (result.effect === "uitgevoerd" && result.invoiceId) {
+        router.push(`/facturen/${result.invoiceId}`);
+        return;
+      }
+      if (result.effect === "wachtrij") {
+        setNotice(`${result.reason} Keur de factuur goed in Toezicht. Daarna staat hij bij Boekhouding.`);
+      } else {
+        setError(result.reason);
+      }
     } catch (caught) {
       showError(caught);
     } finally {
@@ -229,7 +260,7 @@ export function QuoteEditor({
     setError(caught instanceof Error ? caught.message : "Er ging iets mis.");
   }
 
-  const ready = review ? canMarkReady({ ...quote, customerName, lines: draftPreview ?? [], vatRate, location, customerPhone: phone, customerEmail: email, requestedDate }) : false;
+  const ready = review ? canMarkReady({ ...quote, customerName, lines: draftPreview ?? [], vatRate: effectiveVat, location, customerPhone: phone, customerEmail: email, requestedDate }) : false;
 
   return (
     <div className="flex flex-col gap-5">
@@ -301,10 +332,18 @@ export function QuoteEditor({
           <Input id="requestedDate" className="h-10" value={requestedDate} onChange={(event) => setRequestedDate(event.target.value)} />
         </Field>
         <Field label="BTW" id="vatRate">
-          <select id="vatRate" className="h-10 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm" value={String(vatRate)} onChange={(event) => setVatRate(Number(event.target.value))}>
-            <option value="0.21">21%</option>
-            <option value="0.09">9%</option>
-            <option value="0">0%</option>
+          <select
+            id="vatRate"
+            className="h-10 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
+            value={String(effectiveVat)}
+            disabled={vatScenario !== "standaard"}
+            onChange={(event) => setVatRate(Number(event.target.value))}
+          >
+            {vatChoices.map((percent) => (
+              <option key={percent} value={String(percent / 100)}>
+                {percent}%
+              </option>
+            ))}
           </select>
         </Field>
       </div>
@@ -312,13 +351,72 @@ export function QuoteEditor({
         <Textarea id="jobDescription" value={jobDescription} onChange={(event) => setJobDescription(event.target.value)} />
       </Field>
       <LineEditor lines={lines} onChange={setLines} />
+      <section className="rounded-2xl border border-border bg-card p-4">
+        <h2 className="font-heading text-xl">Gegevens voor de e-factuur</h2>
+        <p className="mt-1 text-sm leading-6 text-muted-foreground">
+          Peppol heeft een adres, een endpoint en bij verlegde btw een btw-nummer van de koper. In Nederland is het endpoint meestal het KvK-nummer (0106), in België het ondernemingsnummer (0208).
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <Field label="Land koper" id="customerCountry">
+            <select id="customerCountry" className="h-10 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm" value={customerCountry} onChange={(event) => setCustomerCountry(event.target.value === "BE" ? "BE" : "NL")}>
+              <option value="NL">Nederland</option>
+              <option value="BE">België</option>
+            </select>
+          </Field>
+          <Field label="Btw-scenario" id="vatScenario">
+            <select
+              id="vatScenario"
+              className="h-10 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
+              value={vatScenario}
+              onChange={(event) => {
+                const next = event.target.value as VatScenario;
+                setVatScenario(next);
+                if (next !== "standaard") setVatRate(0);
+              }}
+            >
+              {(Object.keys(SCENARIO_LABEL) as VatScenario[]).map((key) => (
+                <option key={key} value={key}>{SCENARIO_LABEL[key]}</option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Straat en huisnummer" id="customerStreet">
+            <Input id="customerStreet" className="h-10" autoComplete="off" value={customerStreet} onChange={(event) => setCustomerStreet(event.target.value)} />
+          </Field>
+          <Field label="Postcode" id="customerPostalCode">
+            <Input id="customerPostalCode" className="h-10" autoComplete="off" value={customerPostalCode} onChange={(event) => setCustomerPostalCode(event.target.value)} />
+          </Field>
+          <Field label="Plaats" id="customerCity">
+            <Input id="customerCity" className="h-10" autoComplete="off" value={customerCity} onChange={(event) => setCustomerCity(event.target.value)} />
+          </Field>
+          <Field label="Btw-nummer koper" id="customerVat">
+            <Input id="customerVat" className="h-10" autoComplete="off" value={customerVat} onChange={(event) => setCustomerVat(event.target.value)} placeholder={customerCountry === "BE" ? "BE0123456749" : "NL123456789B01"} />
+          </Field>
+          <Field label={customerCountry === "BE" ? "Ondernemingsnummer koper" : "KvK koper"} id="customerLegalId">
+            <Input id="customerLegalId" className="h-10" autoComplete="off" value={customerLegalId} onChange={(event) => setCustomerLegalId(event.target.value)} />
+          </Field>
+          <Field label="Referentie koper" id="buyerReference">
+            <Input id="buyerReference" className="h-10" autoComplete="off" value={buyerReference} onChange={(event) => setBuyerReference(event.target.value)} placeholder="Leeg = offertenummer" />
+          </Field>
+          <Field label="Peppol-scheme" id="customerEndpointScheme">
+            <select id="customerEndpointScheme" className="h-10 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm" value={customerEndpointScheme} onChange={(event) => setCustomerEndpointScheme(event.target.value)}>
+              <option value="">Automatisch uit KvK, ondernemingsnummer of btw</option>
+              {ENDPOINT_SCHEMES.map((scheme) => (
+                <option key={scheme.id} value={scheme.id}>{scheme.label}</option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Peppol-id" id="customerEndpointId">
+            <Input id="customerEndpointId" className="h-10" autoComplete="off" value={customerEndpointId} onChange={(event) => setCustomerEndpointId(event.target.value)} placeholder="Alleen invullen als het afwijkt" />
+          </Field>
+        </div>
+      </section>
       <Field label="Opmerking" id="notes">
         <Textarea id="notes" value={notes} onChange={(event) => setNotes(event.target.value)} />
       </Field>
       {totals ? (
         <dl className="ml-auto w-full max-w-xs text-sm">
           <div className="flex justify-between py-1"><dt>Subtotaal</dt><dd className="tabular-nums">{formatEuro(totals.subtotalCents)}</dd></div>
-          <div className="flex justify-between py-1"><dt>BTW {Math.round(vatRate * 100)}%</dt><dd className="tabular-nums">{formatEuro(totals.vatCents)}</dd></div>
+          <div className="flex justify-between py-1"><dt>BTW {Math.round(effectiveVat * 100)}%</dt><dd className="tabular-nums">{formatEuro(totals.vatCents)}</dd></div>
           <div className="flex justify-between border-t py-2 font-medium"><dt>Totaal</dt><dd className="tabular-nums">{formatEuro(totals.totalCents)}</dd></div>
           {totals.missingPriceCount > 0 ? <p className="text-xs text-warning-foreground">Regels zonder prijs tellen niet mee.</p> : null}
         </dl>
@@ -334,9 +432,15 @@ export function QuoteEditor({
         <Button type="button" variant="outline" className="h-10" disabled={busy !== null || quote.status !== "verstuurd" || !ready} onClick={() => void onAccept()}>
           Markeer geaccepteerd
         </Button>
-        <Button type="button" variant="outline" className="h-10" disabled={busy !== null || (quote.status !== "verstuurd" && quote.status !== "geaccepteerd")} onClick={() => void onInvoice()}>
-          Factuur voorstellen
-        </Button>
+        {invoice ? (
+          <Button type="button" variant="outline" className="h-10" nativeButton={false} render={<Link href={`/facturen/${invoice.id}`} />}>
+            Factuur {invoice.number}
+          </Button>
+        ) : (
+          <Button type="button" variant="outline" className="h-10" disabled={busy !== null || quote.status !== "geaccepteerd"} onClick={() => void onInvoice()}>
+            Factuur voorstellen
+          </Button>
+        )}
         <Button type="button" variant="outline" className="h-10" disabled={busy !== null} onClick={() => void onPdf()}>
           Download PDF
         </Button>
