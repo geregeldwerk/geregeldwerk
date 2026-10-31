@@ -1,5 +1,6 @@
 import { calculateTotals } from "@/lib/domain/money";
 import { QuoteInputError, updateQuote } from "@/lib/domain/quote";
+import { createInvoiceFromQuote } from "@/lib/peppol/invoice";
 import type {
   ActionPayload,
   Actor,
@@ -84,6 +85,7 @@ export interface ActionResult {
   effect: "uitvoeren" | "wachtrij" | "weigeren" | "fout";
   reason: string;
   approvalId: string | null;
+  invoiceId?: string | null;
 }
 
 export function requestAction(
@@ -94,7 +96,7 @@ export function requestAction(
   const at = now.toISOString();
   const draft = structuredClone(store);
   const payload = input.payload;
-  const context = deriveContext(draft, payload);
+  const context = deriveContext(draft, payload, now);
   if (!context.ok) {
     const logged = withAudit(store, {
       at,
@@ -151,7 +153,13 @@ export function requestAction(
       before,
       after,
     });
-    return { store: logged, effect: "uitvoeren", reason: decision.reason, approvalId: null };
+    return {
+      store: logged,
+      effect: "uitvoeren",
+      reason: decision.reason,
+      approvalId: null,
+      invoiceId: invoiceIdFrom(logged, payload),
+    };
   }
 
   if (decision.effect === "weigeren") {
@@ -296,7 +304,18 @@ export function decideApproval(
     after: snapshot(draft, approval.payload),
     comment,
   });
-  return { store: logged, effect: "uitvoeren", reason: "Goedgekeurd door de eigenaar.", approvalId };
+  return {
+    store: logged,
+    effect: "uitvoeren",
+    reason: "Goedgekeurd door de eigenaar.",
+    approvalId,
+    invoiceId: invoiceIdFrom(logged, approval.payload),
+  };
+}
+
+function invoiceIdFrom(store: StoreData, payload: ActionPayload): string | null {
+  if (payload.type !== "factuur_maken") return null;
+  return store.invoices.find((item) => item.quoteId === payload.quoteId)?.id ?? null;
 }
 
 export function setEmergencyStop(store: StoreData, paused: boolean, actor: Actor = OWNER, now = new Date()): StoreData {
@@ -651,6 +670,7 @@ function isExistingCustomer(store: StoreData, name: string, exceptQuoteId?: stri
 function deriveContext(
   store: StoreData,
   payload: ActionPayload,
+  now: Date,
 ):
   | { ok: true; amountCents: number | null; existingCustomer: boolean; customerName: string | null; summary: string }
   | { ok: false; error: string } {
@@ -692,16 +712,30 @@ function deriveContext(
   }
   const quote = store.quotes.find((item) => item.id === payload.quoteId);
   if (!quote) return { ok: false, error: "Offerte niet gevonden." };
+  if (payload.type === "factuur_maken") {
+    const created = createInvoiceFromQuote({
+      quote,
+      settings: store.settings,
+      existingNumbers: store.invoices.map((item) => item.number),
+      existingForQuote: store.invoices.some((item) => item.quoteId === quote.id),
+      now,
+    });
+    if (!created.ok) return { ok: false, error: created.error };
+    return {
+      ok: true,
+      amountCents: created.invoice.totalCents,
+      existingCustomer: isExistingCustomer(store, quote.customerName, quote.id),
+      customerName: quote.customerName,
+      summary: `Factuur maken voor ${quote.number}`,
+    };
+  }
   const totals = calculateTotals(quote.lines, quote.vatRate);
   return {
     ok: true,
     amountCents: totals.complete ? totals.totalCents : null,
     existingCustomer: isExistingCustomer(store, quote.customerName, quote.id),
     customerName: quote.customerName,
-    summary:
-      payload.type === "factuur_maken"
-        ? `Factuur maken voor ${quote.number}`
-        : `Offerte versturen ${quote.number}`,
+    summary: `Offerte versturen ${quote.number}`,
   };
 }
 
@@ -749,25 +783,15 @@ function applyPayload(store: StoreData, payload: ActionPayload, now: Date): { ok
       return { ok: false, error: error instanceof QuoteInputError ? error.message : "Versturen mislukt." };
     }
   }
-  if (quote.status !== "geaccepteerd" && quote.status !== "verstuurd") {
-    return { ok: false, error: "Alleen een verstuurde of geaccepteerde offerte kan een factuur worden." };
-  }
-  const totals = calculateTotals(quote.lines, quote.vatRate);
-  if (!totals.complete) return { ok: false, error: "Factuur kan niet zonder volledige prijzen." };
-  const year = now.getFullYear();
-  const seq = store.invoices.filter((item) => item.number.startsWith(`FAC-${year}-`)).length + 1;
-  store.invoices.unshift({
-    id: `invoice-${crypto.randomUUID()}`,
-    number: `FAC-${year}-${String(seq).padStart(3, "0")}`,
-    quoteId: quote.id,
-    customerName: quote.customerName,
-    amountCents: totals.subtotalCents,
-    vatCents: totals.vatCents,
-    totalCents: totals.totalCents,
-    createdAt: now.toISOString(),
-    example: false,
-    simulated: true,
+  const created = createInvoiceFromQuote({
+    quote,
+    settings: store.settings,
+    existingNumbers: store.invoices.map((item) => item.number),
+    existingForQuote: store.invoices.some((item) => item.quoteId === quote.id),
+    now,
   });
+  if (!created.ok) return { ok: false, error: created.error };
+  store.invoices.unshift(created.invoice);
   return { ok: true };
 }
 

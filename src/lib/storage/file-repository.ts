@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { StoreData } from "@/lib/domain/types";
-import { createSeedData } from "@/lib/storage/seed";
+import { createSeedData, normalizeSettings } from "@/lib/storage/seed";
 
 export function normalizeStore(input: Partial<StoreData> | null | undefined): StoreData {
   const seed = createSeedData();
@@ -9,7 +9,7 @@ export function normalizeStore(input: Partial<StoreData> | null | undefined): St
   return {
     quotes: input.quotes,
     tasks: Array.isArray(input.tasks) ? input.tasks : [],
-    settings: input.settings,
+    settings: normalizeSettings(input.settings),
     permissions: input.permissions ?? seed.permissions,
     approvals: Array.isArray(input.approvals) ? input.approvals : [],
     permissionProposals: Array.isArray(input.permissionProposals) ? input.permissionProposals : [],
