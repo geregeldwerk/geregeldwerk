@@ -46,8 +46,10 @@ export function Nav() {
             href={link.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm whitespace-nowrap transition-colors",
-              active ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted",
+              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm whitespace-nowrap transition-all",
+              active
+                ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                : "text-foreground hover:bg-secondary hover:text-secondary-foreground",
             )}
           >
             <Icon className="size-4" aria-hidden />
@@ -98,7 +100,7 @@ export function BottomNav() {
         </div>
       ) : null}
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 backdrop-blur"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 shadow-[0_-8px_24px_rgba(21,56,46,0.08)] backdrop-blur"
         aria-label="Mobiel menu"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
@@ -113,7 +115,7 @@ export function BottomNav() {
                   aria-current={active ? "page" : undefined}
                   className={cn(
                     "flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px]",
-                    active ? "text-primary" : "text-muted-foreground",
+                    active ? "bg-secondary text-primary" : "text-muted-foreground",
                   )}
                 >
                   <Icon className="size-5" aria-hidden />

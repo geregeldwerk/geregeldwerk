@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
 });
 
-const themeScript = `(function(){try{var t=localStorage.getItem("geregeldwerk-theme");if(t==="light")document.documentElement.classList.remove("dark");else document.documentElement.classList.add("dark");}catch(e){}})();`;
+const themeScript = `(function(){try{var t=localStorage.getItem("geregeldwerk-theme");document.documentElement.classList.toggle("dark",t==="dark");}catch(e){}})();`;
 
 function accentClassName() {
   const theme = process.env.ACCENT_THEME;
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="nl" suppressHydrationWarning className={`${geist.variable} ${geistMono.variable} dark ${accentClassName()} h-full antialiased`}>
+    <html lang="nl" suppressHydrationWarning className={`${geist.variable} ${geistMono.variable} ${accentClassName()} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         {children}

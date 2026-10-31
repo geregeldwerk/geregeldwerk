@@ -216,10 +216,10 @@ export function Composer() {
         </p>
       </div>
 
-      <p className="rounded-2xl bg-secondary px-4 py-3 text-sm leading-6">{providerNote}</p>
+      <p className="rounded-2xl border border-primary/20 bg-secondary px-4 py-3 text-sm leading-6 text-secondary-foreground shadow-sm shadow-primary/5">{providerNote}</p>
 
       <form
-        className="rounded-3xl border border-border bg-card p-4 shadow-sm transition duration-200 sm:p-6"
+        className="rounded-3xl border border-border bg-card p-4 shadow-md shadow-foreground/5 transition duration-200 sm:p-6"
         onSubmit={(event) => {
           event.preventDefault();
           void readMessage();

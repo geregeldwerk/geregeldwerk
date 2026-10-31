@@ -8,10 +8,10 @@ export default function WerkLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="flex min-h-full flex-1 flex-col">
       <EmergencyBanner />
-      <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-border/80 bg-card/88 shadow-[0_1px_12px_rgba(21,56,46,0.06)] backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3">
           <Link href="/" className="flex min-w-0 items-center gap-3">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-primary text-sm font-semibold text-primary-foreground">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-emerald-700 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/25 dark:to-emerald-500">
               G
             </span>
             <span className="min-w-0">
