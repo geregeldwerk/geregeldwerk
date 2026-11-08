@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
+import { VisitBeacon } from "@/components/visit-beacon";
 import "./globals.css";
 
 const geist = Geist({
@@ -34,6 +36,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="nl" suppressHydrationWarning className={`dark ${geist.variable} ${geistMono.variable} ${accentClassName()} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <Suspense fallback={null}>
+          <VisitBeacon />
+        </Suspense>
         {children}
       </body>
     </html>
