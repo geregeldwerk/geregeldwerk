@@ -36,7 +36,9 @@ describe("prijscatalogus", () => {
       null,
     ]);
     expect(billingCatalog.vatNote).toBe("Alle prijzen exclusief btw");
-    expect(billingCatalog.yearlyDiscountLabel).toBe("2 maanden gratis");
+    expect(billingCatalog.yearlyDiscountLabel).toBe("2 maanden voordeel bij jaarlijks betalen");
+    expect(billingCatalog.yearlyDiscountBadge).toBe("2 maanden voordeel");
+    expect(billingCatalog.plans.filter((plan) => plan.monthlyPriceCents != null).every((plan) => plan.cta.label === "Probeer 7 dagen gratis")).toBe(true);
   });
 
   it("toont de bedragen in de afgesproken schrijfwijze", () => {

@@ -81,7 +81,7 @@ const plans: Plan[] = [
       ["offertehistorie", "offertehistorie"],
       ["basisdashboard", "basisdashboard"],
     ]),
-    cta: { label: "Kies Starter", href: "/api/stripe/checkout" },
+    cta: { label: "Probeer 7 dagen gratis", href: "/api/stripe/checkout" },
     stripeLookupKey: { month: "starter_monthly", year: "starter_yearly" },
   },
   {
@@ -105,7 +105,7 @@ const plans: Plan[] = [
       ["conversieoverzicht", "conversieoverzicht"],
       ["klantenbeheer-uitgebreid", "uitgebreid klantenbeheer en statistieken"],
     ]),
-    cta: { label: "Kies Professional", href: "/api/stripe/checkout" },
+    cta: { label: "Probeer 7 dagen gratis", href: "/api/stripe/checkout" },
     stripeLookupKey: { month: "professional_monthly", year: "professional_yearly" },
   },
   {
@@ -133,7 +133,7 @@ const plans: Plan[] = [
       ["portaal-domein", "eigen aanvraagportaal-domein"],
       ["prioriteit-support", "prioriteit support"],
     ]),
-    cta: { label: "Kies Business", href: "/api/stripe/checkout" },
+    cta: { label: "Probeer 7 dagen gratis", href: "/api/stripe/checkout" },
     stripeLookupKey: { month: "business_monthly", year: "business_yearly" },
   },
   {
@@ -174,7 +174,8 @@ const addons: Addon[] = [
 
 export const billingCatalog: BillingCatalog = {
   brand: "GeregeldWerk",
-  yearlyDiscountLabel: "2 maanden gratis",
+  yearlyDiscountLabel: "2 maanden voordeel bij jaarlijks betalen",
+  yearlyDiscountBadge: "2 maanden voordeel",
   vatNote: "Alle prijzen exclusief btw",
   priceFootnote:
     "Alle prijzen exclusief btw. Kosten voor WhatsApp-berichten en eventuele externe berichtkosten worden apart berekend.",

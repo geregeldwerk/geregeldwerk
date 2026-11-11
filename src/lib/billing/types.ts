@@ -106,7 +106,8 @@ export interface BillingPurchase {
 
 export interface BillingCatalog {
   brand: "GeregeldWerk";
-  yearlyDiscountLabel: "2 maanden gratis";
+  yearlyDiscountLabel: "2 maanden voordeel bij jaarlijks betalen";
+  yearlyDiscountBadge: "2 maanden voordeel";
   vatNote: "Alle prijzen exclusief btw";
   priceFootnote: "Alle prijzen exclusief btw. Kosten voor WhatsApp-berichten en eventuele externe berichtkosten worden apart berekend.";
   /**

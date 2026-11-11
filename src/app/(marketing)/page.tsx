@@ -75,7 +75,7 @@ export default function LandingPage() {
               </a>
             ) : (
               <Link href="/app" className="inline-flex h-10 shrink-0 items-center rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground">
-                Probeer gratis
+                Naar de app
               </Link>
             )}
           </div>
@@ -124,7 +124,7 @@ export default function LandingPage() {
                 ) : (
                   <>
                     <Link href="/app" className="inline-flex h-12 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground">
-                      Probeer gratis
+                      Naar de app
                     </Link>
                     <Link href="/app" className="inline-flex h-12 items-center justify-center rounded-lg border border-border bg-background px-5 text-sm font-semibold">
                       Inloggen
@@ -249,7 +249,9 @@ export default function LandingPage() {
               Nee. Je controleert de conceptofferte en keurt goed voordat die naar de klant gaat.
             </Faq>
             <Faq question="Hoe betaal ik?">
-              Op deze pagina nog niet. De bedragen zijn exclusief btw. Probeer gratis en Inloggen openen de app, zonder betaalstap.
+              {waitlist
+                ? "Nu nog niet. De bedragen zijn verwachte prijzen bij lancering, exclusief btw. De knoppen zetten je op de wachtlijst."
+                : "Starter, Professional en Business openen de kassa. Jaarlijks betalen geeft 2 maanden voordeel: 12 maanden voor de prijs van 10. Alle prijzen zijn exclusief btw."}
             </Faq>
           </div>
         </section>

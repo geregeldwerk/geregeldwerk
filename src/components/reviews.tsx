@@ -1,16 +1,24 @@
 import Link from "next/link";
+import { launchMode } from "@/lib/launch";
 import { publishedReviews, type Review } from "@/lib/trust";
 
 export function Reviews({ reviews = publishedReviews() }: { reviews?: Review[] }) {
+  const waitlist = launchMode() !== "live";
   if (reviews.length === 0) {
     return (
       <section id="reviews" aria-labelledby="reviews-title" className="scroll-mt-28 rounded-3xl border border-dashed border-primary/40 bg-card px-5 py-8">
         <h2 id="reviews-title" className="max-w-2xl text-2xl tracking-tight text-balance sm:text-3xl">
           Word een van de eerste gebruikers. Test GeregeldWerk mee en help het vormgeven.
         </h2>
-        <Link href="/app" className="mt-6 inline-flex h-12 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground">
-          Probeer gratis
-        </Link>
+        {waitlist ? (
+          <a href="#wachtlijst" className="mt-6 inline-flex h-12 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground">
+            Zet me op de wachtlijst
+          </a>
+        ) : (
+          <Link href="/app" className="mt-6 inline-flex h-12 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground">
+            Naar de app
+          </Link>
+        )}
       </section>
     );
   }

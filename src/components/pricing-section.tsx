@@ -44,7 +44,7 @@ export function PricingSection({ catalog, mode = "waitlist" }: { catalog: Billin
           <PeriodButton pressed={interval === "year"} onClick={() => setInterval("year")}>
             Jaar
             <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-semibold tracking-normal text-primary normal-case">
-              {catalog.yearlyDiscountLabel}
+              {catalog.yearlyDiscountBadge}
             </span>
           </PeriodButton>
         </div>
