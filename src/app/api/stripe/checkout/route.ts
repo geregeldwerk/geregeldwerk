@@ -1,4 +1,5 @@
 import { connection } from "next/server";
+import { launchMode } from "@/lib/launch";
 import { CheckoutInputError, startCheckout, type CheckoutGateway, type CheckoutRequest } from "@/lib/billing/checkout";
 import { getStripe, STRIPE_NOT_CONFIGURED } from "@/lib/billing/stripe";
 import type Stripe from "stripe";
@@ -36,6 +37,9 @@ export function gatewayFor(stripe: Stripe): CheckoutGateway {
 export async function POST(request: Request) {
   await connection();
   const stripe = getStripe();
+  if (launchMode() !== "live") {
+    return Response.json({ error: "De kassa opent bij de lancering. Zet jezelf op de wachtlijst." }, { status: 403 });
+  }
   if (!stripe) return Response.json({ error: STRIPE_NOT_CONFIGURED }, { status: 503 });
   try {
     const input = parseCheckout(await request.json().catch(() => null));

@@ -22,6 +22,7 @@ export function normalizeStore(input: Partial<StoreData> | null | undefined): St
     subscription: input.subscription ?? null,
     billingPurchases: Array.isArray(input.billingPurchases) ? input.billingPurchases : [],
     processedStripeEvents: Array.isArray(input.processedStripeEvents) ? input.processedStripeEvents : [],
+    waitlist: Array.isArray(input.waitlist) ? input.waitlist : [],
   };
 }
 

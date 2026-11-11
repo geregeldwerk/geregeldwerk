@@ -8,6 +8,8 @@ import { Reviews } from "@/components/reviews";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { TrustBadges } from "@/components/trust-badges";
 import { billingCatalog } from "@/lib/billing/seed";
+import { launchMode } from "@/lib/launch";
+import { WaitlistForm } from "@/components/waitlist-form";
 
 export const metadata: Metadata = {
   title: { absolute: "GeregeldWerk – Van aanvraag naar offerte. Slim geregeld." },
@@ -15,15 +17,15 @@ export const metadata: Metadata = {
     "GeregeldWerk is een SaaS-platform voor slimme offerteautomatisering. Aanvragen komen binnen via e-mail, WhatsApp of een online aanvraagformulier. Jij doet het werk, wij doen de rest.",
 };
 
-const reasons: Array<{ text: string; icon?: string }> = [
-  { text: "van aanvraag naar offerte in minuten", icon: "/brand/iconen/van-bericht-naar-offerte.svg" },
-  { text: "één inbox voor e-mail, WhatsApp en formulier", icon: "/brand/iconen/alle-kanalen.svg" },
+const reasons: Array<{ text: string; icon?: string; soon?: boolean }> = [
+  { text: "van aanvraag naar offerte in minuten", icon: "/brand/iconen/van-bericht-naar-offerte.svg", soon: true },
+  { text: "één inbox voor e-mail, WhatsApp en formulier", icon: "/brand/iconen/alle-kanalen.svg", soon: true },
   { text: "er gaat niets weg zonder jouw goedkeuring", icon: "/brand/iconen/jij-houdt-de-controle.svg" },
   { text: "eigen huisstijl, tarieven, btw en voorwaarden" },
-  { text: "klantenbeheer en offertehistorie centraal", icon: "/brand/iconen/minder-admin.svg" },
-  { text: "automatische opvolging", icon: "/brand/iconen/tijdwinst.svg" },
-  { text: "dashboard met conversies" },
-  { text: "eigen beveiligde omgeving per bedrijf" },
+  { text: "klantenbeheer en offertehistorie centraal", icon: "/brand/iconen/minder-admin.svg", soon: true },
+  { text: "automatische opvolging", icon: "/brand/iconen/tijdwinst.svg", soon: true },
+  { text: "dashboard met conversies", soon: true },
+  { text: "eigen beveiligde omgeving per bedrijf", soon: true },
   { text: "Peppol e-facturatie" },
   { text: "Nederlandstalig, voor NL en BE", icon: "/brand/iconen/nl-be-proof.svg" },
 ];
@@ -47,12 +49,15 @@ const steps = [
 ];
 
 export default function LandingPage() {
+  const mode = launchMode();
+  const waitlist = mode === "waitlist";
   return (
     <div className="flex min-h-full flex-1 flex-col">
       <header className="sticky top-0 z-30 border-b border-border bg-background">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3">
           <BrandLockup href="/" className="min-w-0" />
           <nav aria-label="Pagina" className="hidden items-center gap-5 text-sm lg:flex">
+            <a href="#wachtlijst" className="hover:text-primary">Early access</a>
             <a href="#waarom" className="hover:text-primary">Waarom</a>
             <a href="#werking" className="hover:text-primary">Zo werkt het</a>
             <a href="#prijzen" className="hover:text-primary">Prijzen</a>
@@ -61,15 +66,23 @@ export default function LandingPage() {
           </nav>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Link href="/app" className="hidden h-10 items-center rounded-lg border border-border px-3 text-sm font-semibold sm:inline-flex">
+            <Link href="/app" className={waitlist ? "hidden text-sm text-muted-foreground underline-offset-4 hover:underline sm:inline" : "hidden h-10 items-center rounded-lg border border-border px-3 text-sm font-semibold sm:inline-flex"}>
               Inloggen
             </Link>
-            <Link href="/app" className="inline-flex h-10 shrink-0 items-center rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground">
-              Probeer gratis
-            </Link>
+            {waitlist ? (
+              <a href="#wachtlijst" className="inline-flex h-10 shrink-0 items-center rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground">
+                Zet me op de wachtlijst
+              </a>
+            ) : (
+              <Link href="/app" className="inline-flex h-10 shrink-0 items-center rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground">
+                Probeer gratis
+              </Link>
+            )}
           </div>
         </div>
         <nav aria-label="Pagina" className="flex gap-4 overflow-x-auto px-4 pb-3 text-sm lg:hidden">
+          <Link href="/app" className="shrink-0 text-muted-foreground">Inloggen</Link>
+          <a href="#wachtlijst" className="shrink-0">Early access</a>
           <a href="#waarom" className="shrink-0">Waarom</a>
           <a href="#werking" className="shrink-0">Zo werkt het</a>
           <a href="#prijzen" className="shrink-0">Prijzen</a>
@@ -104,12 +117,20 @@ export default function LandingPage() {
                 GeregeldWerk is een SaaS-platform voor slimme offerteautomatisering. Aanvragen komen binnen via e-mail, WhatsApp of een online aanvraagformulier. AI herkent de werkzaamheden en klantgegevens en maakt op basis van de ingestelde bedrijfsgegevens, diensten, tarieven en voorwaarden een professionele conceptofferte. De ondernemer controleert, past aan en keurt goed voordat de offerte verstuurd wordt.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link href="/app" className="inline-flex h-12 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground">
-                  Probeer gratis
-                </Link>
-                <Link href="/app" className="inline-flex h-12 items-center justify-center rounded-lg border border-border bg-background px-5 text-sm font-semibold">
-                  Inloggen
-                </Link>
+                {waitlist ? (
+                  <a href="#wachtlijst" className="inline-flex h-12 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground">
+                    Schrijf je in voor early access
+                  </a>
+                ) : (
+                  <>
+                    <Link href="/app" className="inline-flex h-12 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground">
+                      Probeer gratis
+                    </Link>
+                    <Link href="/app" className="inline-flex h-12 items-center justify-center rounded-lg border border-border bg-background px-5 text-sm font-semibold">
+                      Inloggen
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -140,10 +161,30 @@ export default function LandingPage() {
                 ) : (
                   <BrandCheck className="mt-1 size-5" />
                 )}
-                <span>{reason.text}</span>
+                <span className="min-w-0">
+                  <span className="block">{reason.text}</span>
+                  {waitlist && reason.soon ? (
+                    <span className="mt-1 inline-block text-xs font-semibold tracking-wide text-primary uppercase">Bij lancering</span>
+                  ) : null}
+                </span>
               </li>
             ))}
           </ul>
+          {waitlist ? (
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground">
+              GeregeldWerk is in ontwikkeling. Wat je hier ziet is de richting. Vroege aanmelders krijgen als eerste toegang.
+            </p>
+          ) : null}
+        </section>
+
+        <section id="wachtlijst" className="mx-auto w-full max-w-6xl scroll-mt-28 px-4 py-12">
+          <h2 className="text-3xl tracking-tight sm:text-4xl">Early access</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+            We verkopen nog niets. Laat je gegevens achter, dan hoor je het als GeregeldWerk opent.
+          </p>
+          <div className="mt-6 max-w-3xl">
+            <WaitlistForm />
+          </div>
         </section>
 
         <section id="werking" className="mx-auto w-full max-w-6xl scroll-mt-28 px-4 py-12">
@@ -176,10 +217,12 @@ export default function LandingPage() {
         <section id="prijzen" className="mx-auto w-full max-w-6xl scroll-mt-28 px-4 py-12">
           <h2 className="text-3xl tracking-tight sm:text-4xl">Prijzen</h2>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Vier pakketten. Jaarlijks scheelt twee maanden. De pakketknoppen openen de Stripe-testkassa. Enterprise blijft contact.
+            {waitlist
+              ? "Verwachte prijzen bij lancering. Je koopt nu nog niets."
+              : "Vier pakketten. Jaarlijks scheelt twee maanden. De pakketknoppen openen de Stripe-testkassa. Enterprise blijft contact."}
           </p>
           <div className="mt-8">
-            <PricingSection catalog={billingCatalog} />
+            <PricingSection catalog={billingCatalog} mode={mode} />
           </div>
         </section>
 

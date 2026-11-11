@@ -31,6 +31,10 @@ export default function WerkLayout({ children }: { children: React.ReactNode }) 
         <Link href="/permissies" className="underline">
           Permissies
         </Link>
+        {" · "}
+        <Link href="/app/wachtlijst" className="underline">
+          Wachtlijst
+        </Link>
       </footer>
       <Suspense fallback={null}>
         <BottomNav />

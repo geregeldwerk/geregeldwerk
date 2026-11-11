@@ -4,8 +4,10 @@ import { useState } from "react";
 import { BrandCheck } from "@/components/brand-check";
 import { formatAddonPrice, formatPriceCents } from "@/lib/billing/format";
 import type { BillingCatalog, BillingInterval, Plan } from "@/lib/billing/types";
+import type { LaunchMode } from "@/lib/launch";
 
-export function PricingSection({ catalog }: { catalog: BillingCatalog }) {
+export function PricingSection({ catalog, mode = "waitlist" }: { catalog: BillingCatalog; mode?: LaunchMode }) {
+  const waitlist = mode !== "live";
   const [interval, setInterval] = useState<BillingInterval>("month");
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -46,7 +48,7 @@ export function PricingSection({ catalog }: { catalog: BillingCatalog }) {
             </span>
           </PeriodButton>
         </div>
-        <p className="text-sm text-muted-foreground">{catalog.vatNote}</p>
+        <p className="text-sm text-muted-foreground">{waitlist ? "Verwachte prijzen bij lancering" : catalog.vatNote}</p>
       </div>
       {message ? (
         <p className="rounded-xl border border-border bg-card px-4 py-3 text-sm" role="status">
@@ -95,6 +97,7 @@ export function PricingSection({ catalog }: { catalog: BillingCatalog }) {
                 plan={plan}
                 mailto={catalog.enterpriseMailto}
                 busy={busy === plan.id}
+                waitlist={waitlist}
                 onCheckout={() => void checkout({ kind: "plan", planId: plan.id, interval }, plan.id)}
               />
             </article>
@@ -143,7 +146,7 @@ export function PricingSection({ catalog }: { catalog: BillingCatalog }) {
             <li key={addon.id} className="rounded-2xl border border-border bg-card px-4 py-3">
               <p className="text-sm">{addon.name}</p>
               <p className="mt-1 text-lg font-semibold">{formatAddonPrice(addon)}</p>
-              {addon.stripeLookupKey ? (
+              {addon.stripeLookupKey && !waitlist ? (
                 <button
                   type="button"
                   className="mt-3 inline-flex h-9 items-center rounded-lg border border-border px-3 text-sm font-semibold hover:border-primary/40 disabled:opacity-60"
@@ -152,6 +155,10 @@ export function PricingSection({ catalog }: { catalog: BillingCatalog }) {
                 >
                   {busy === addon.id ? "Even naar de kassa…" : "Afrekenen"}
                 </button>
+              ) : addon.stripeLookupKey ? (
+                <a href="#wachtlijst" className="mt-3 inline-flex h-9 items-center rounded-lg border border-border px-3 text-sm font-semibold hover:border-primary/40">
+                  Zet me op de wachtlijst
+                </a>
               ) : (
                 <p className="mt-3 text-sm text-muted-foreground">Op aanvraag</p>
               )}
@@ -206,11 +213,13 @@ function PlanCta({
   plan,
   mailto,
   busy,
+  waitlist,
   onCheckout,
 }: {
   plan: Plan;
   mailto: string;
   busy: boolean;
+  waitlist: boolean;
   onCheckout: () => void;
 }) {
   const className = plan.highlighted
@@ -220,6 +229,13 @@ function PlanCta({
     return (
       <a href={mailto} className={className}>
         {plan.cta.label}
+      </a>
+    );
+  }
+  if (waitlist) {
+    return (
+      <a href="#wachtlijst" className={className}>
+        Zet me op de wachtlijst
       </a>
     );
   }

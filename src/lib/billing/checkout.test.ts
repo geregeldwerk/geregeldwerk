@@ -15,6 +15,7 @@ import { sessionParams, startCheckout } from "@/lib/billing/checkout";
 describe("checkout", () => {
   beforeEach(() => {
     getStripe.mockReset();
+    process.env.NEXT_PUBLIC_LAUNCH_MODE = "live";
   });
 
   it("koppelt een pakket aan de lookup_key en hardcode geen price-id", async () => {
@@ -49,6 +50,16 @@ describe("checkout", () => {
     });
     expect(params.mode).toBe("payment");
     expect(params.subscription_data).toBeUndefined();
+  });
+
+  it("weigert checkout in wachtlijstmodus", async () => {
+    process.env.NEXT_PUBLIC_LAUNCH_MODE = "waitlist";
+    getStripe.mockReturnValue({ prices: { list: vi.fn() }, checkout: { sessions: { create: vi.fn() } } });
+    const response = await POST(new Request("http://localhost/api/stripe/checkout", {
+      method: "POST",
+      body: JSON.stringify({ kind: "plan", planId: "starter", interval: "month" }),
+    }));
+    expect(response.status).toBe(403);
   });
 
   it("geeft een nette melding zonder Stripe-sleutel", async () => {

@@ -1,4 +1,5 @@
 import type { BillingPurchase, CompanySubscription } from "@/lib/billing/types";
+import type { StoredWaitlistEntry } from "@/lib/waitlist/schema";
 
 export const QUOTE_STATUSES = ["concept", "verstuurd", "geaccepteerd"] as const;
 
@@ -338,6 +339,7 @@ export interface StoreData {
   subscription?: CompanySubscription | null;
   billingPurchases?: BillingPurchase[];
   processedStripeEvents?: string[];
+  waitlist?: StoredWaitlistEntry[];
 }
 
 export interface Totals {

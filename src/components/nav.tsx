@@ -93,6 +93,11 @@ export function BottomNav() {
               );
             })}
             <li>
+              <Link href="/app/wachtlijst" onClick={() => setMoreOpen(false)} className="flex items-center gap-2 rounded-2xl px-3 py-3 text-sm hover:bg-muted">
+                Wachtlijst
+              </Link>
+            </li>
+            <li>
               <Link href="/permissies" onClick={() => setMoreOpen(false)} className="flex items-center gap-2 rounded-2xl px-3 py-3 text-sm hover:bg-muted">
                 Permissies
               </Link>
