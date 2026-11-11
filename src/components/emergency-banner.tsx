@@ -18,7 +18,7 @@ export function EmergencyBanner() {
   return (
     <p className="bg-destructive px-4 py-2 text-center text-sm text-white">
       Noodstop aan. Automatische permissies zijn gepauzeerd; acties binnen de grenzen gaan naar de wachtrij.{" "}
-      <Link href="/toezicht" className="underline">
+      <Link href="/toezicht" className="text-white underline">
         Naar Toezicht
       </Link>
     </p>

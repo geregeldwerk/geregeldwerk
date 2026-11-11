@@ -22,11 +22,11 @@ function accentClassName() {
 
 export const metadata: Metadata = {
   title: {
-    default: "Geregeldwerk",
-    template: "%s · Geregeldwerk",
+    default: "GeregeldWerk",
+    template: "%s · GeregeldWerk",
   },
   description:
-    "Geregeldwerk helpt Nederlandse installateurs en klusbedrijven een appje of e-mail om te zetten in een conceptofferte. Jij doet het werk, wij doen de rest",
+    "GeregeldWerk. Van aanvraag naar offerte. Slim geregeld. Jij doet het werk, wij doen de rest.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

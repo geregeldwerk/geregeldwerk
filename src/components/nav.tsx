@@ -16,7 +16,7 @@ import { useState } from "react";
 import { cn } from "cn";
 
 const LINKS = [
-  { href: "/", label: "Bericht", icon: MessageSquarePlus },
+  { href: "/app", label: "Bericht", icon: MessageSquarePlus },
   { href: "/offertes", label: "Offertes", icon: FileText },
   { href: "/toezicht", label: "Toezicht", icon: ShieldCheck },
   { href: "/marketing", label: "Marketing", icon: Megaphone },
@@ -29,7 +29,8 @@ const DOCK = LINKS.slice(0, 4);
 const MORE = LINKS.slice(4);
 
 function isActive(pathname: string, href: string) {
-  return href === "/" ? pathname === "/" : pathname.startsWith(href);
+  if (href === "/" || href === "/app") return pathname === href;
+  return pathname.startsWith(href);
 }
 
 export function Nav() {
@@ -49,7 +50,7 @@ export function Nav() {
               "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm whitespace-nowrap transition-all",
               active
                 ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
-                : "text-foreground hover:bg-secondary hover:text-secondary-foreground",
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground",
             )}
           >
             <Icon className="size-4" aria-hidden />
@@ -100,7 +101,7 @@ export function BottomNav() {
         </div>
       ) : null}
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 shadow-[0_-8px_24px_rgba(21,56,46,0.08)] backdrop-blur"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur"
         aria-label="Mobiel menu"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
@@ -114,10 +115,11 @@ export function BottomNav() {
                   href={link.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px]",
-                    active ? "bg-secondary text-primary" : "text-muted-foreground",
+                    "relative flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-medium",
+                    active ? "text-primary" : "text-muted-foreground",
                   )}
                 >
+                  {active ? <span className="absolute inset-x-3 top-0 h-0.5 rounded-full bg-primary" aria-hidden /> : null}
                   <Icon className="size-5" aria-hidden />
                   {link.label}
                 </Link>

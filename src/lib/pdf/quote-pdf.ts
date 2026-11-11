@@ -23,7 +23,7 @@ export async function renderQuotePdf(quote: Quote, settings: CompanySettings): P
     font: bold,
     color: rgb(0.96, 0.94, 0.9),
   });
-  page.drawText("Geregeldwerk", {
+  page.drawText("GeregeldWerk", {
     x: 430,
     y: 814,
     size: 12,
