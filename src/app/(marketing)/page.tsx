@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { BrandCheck } from "@/components/brand-check";
 import { BrandLockup } from "@/components/brand-lockup";
@@ -14,31 +15,34 @@ export const metadata: Metadata = {
     "GeregeldWerk is een SaaS-platform voor slimme offerteautomatisering. Aanvragen komen binnen via e-mail, WhatsApp of een online aanvraagformulier. Jij doet het werk, wij doen de rest.",
 };
 
-const reasons = [
-  "van aanvraag naar offerte in minuten",
-  "één inbox voor e-mail, WhatsApp en formulier",
-  "er gaat niets weg zonder jouw goedkeuring",
-  "eigen huisstijl, tarieven, btw en voorwaarden",
-  "klantenbeheer en offertehistorie centraal",
-  "automatische opvolging",
-  "dashboard met conversies",
-  "eigen beveiligde omgeving per bedrijf",
-  "Peppol e-facturatie",
-  "Nederlandstalig, voor NL en BE",
+const reasons: Array<{ text: string; icon?: string }> = [
+  { text: "van aanvraag naar offerte in minuten", icon: "/brand/iconen/van-bericht-naar-offerte.svg" },
+  { text: "één inbox voor e-mail, WhatsApp en formulier", icon: "/brand/iconen/alle-kanalen.svg" },
+  { text: "er gaat niets weg zonder jouw goedkeuring", icon: "/brand/iconen/jij-houdt-de-controle.svg" },
+  { text: "eigen huisstijl, tarieven, btw en voorwaarden" },
+  { text: "klantenbeheer en offertehistorie centraal", icon: "/brand/iconen/minder-admin.svg" },
+  { text: "automatische opvolging", icon: "/brand/iconen/tijdwinst.svg" },
+  { text: "dashboard met conversies" },
+  { text: "eigen beveiligde omgeving per bedrijf" },
+  { text: "Peppol e-facturatie" },
+  { text: "Nederlandstalig, voor NL en BE", icon: "/brand/iconen/nl-be-proof.svg" },
 ];
 
 const steps = [
   {
     title: "Aanvraag komt binnen",
     text: "Via e-mail, WhatsApp of het online aanvraagformulier.",
+    image: "/landing/stap-1-aanvraag.webp",
   },
   {
     title: "AI maakt een conceptofferte",
     text: "Op basis van je bedrijfsgegevens, diensten, tarieven en voorwaarden.",
+    image: "/landing/stap-2-concept.webp",
   },
   {
     title: "Jij keurt goed en verstuurt",
     text: "Je controleert, past aan en verstuurt pas na jouw goedkeuring.",
+    image: "/landing/stap-3-goedkeuren.webp",
   },
 ];
 
@@ -75,28 +79,54 @@ export default function LandingPage() {
       </header>
 
       <main>
-        <section className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-14 sm:py-20">
-          <BrandLockup href="/" size="hero" />
-          <div className="max-w-3xl">
-            <h1 className="text-4xl tracking-tight text-balance sm:text-6xl">
-              <span className="wordmark block text-sm text-primary sm:text-base">GeregeldWerk</span>
-              <span className="mt-3 block">Van aanvraag naar offerte. Slim geregeld.</span>
-            </h1>
-            <p className="mt-5 text-sm font-semibold tracking-[0.16em] text-primary uppercase">
-              Jij doet het werk, wij doen de rest
-            </p>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">
-              GeregeldWerk is een SaaS-platform voor slimme offerteautomatisering. Aanvragen komen binnen via e-mail, WhatsApp of een online aanvraagformulier. AI herkent de werkzaamheden en klantgegevens en maakt op basis van de ingestelde bedrijfsgegevens, diensten, tarieven en voorwaarden een professionele conceptofferte. De ondernemer controleert, past aan en keurt goed voordat de offerte verstuurd wordt.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/app" className="inline-flex h-12 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground">
-                Probeer gratis
-              </Link>
-              <Link href="/app" className="inline-flex h-12 items-center justify-center rounded-lg border border-border px-5 text-sm font-semibold">
-                Inloggen
-              </Link>
+        <section className="relative overflow-hidden">
+          <div className="absolute inset-0 hidden md:block">
+            <Image
+              src="/landing/hero-vakman.webp"
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover object-[72%_center]"
+            />
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,var(--background)_0%,var(--background)_34%,color-mix(in_srgb,var(--background)_70%,transparent)_52%,transparent_74%)]" />
+          </div>
+          <div className="relative mx-auto flex w-full max-w-6xl items-center px-4 py-14 sm:py-20 md:min-h-[36rem]">
+            <div className="max-w-xl">
+              <h1 className="text-4xl tracking-tight text-balance sm:text-6xl">
+                <span className="wordmark block text-sm text-primary sm:text-base">GeregeldWerk</span>
+                <span className="mt-3 block">Van aanvraag naar offerte. Slim geregeld.</span>
+              </h1>
+              <p className="mt-5 text-sm font-semibold tracking-[0.16em] text-primary uppercase">
+                Jij doet het werk, wij doen de rest
+              </p>
+              <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground">
+                GeregeldWerk is een SaaS-platform voor slimme offerteautomatisering. Aanvragen komen binnen via e-mail, WhatsApp of een online aanvraagformulier. AI herkent de werkzaamheden en klantgegevens en maakt op basis van de ingestelde bedrijfsgegevens, diensten, tarieven en voorwaarden een professionele conceptofferte. De ondernemer controleert, past aan en keurt goed voordat de offerte verstuurd wordt.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link href="/app" className="inline-flex h-12 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground">
+                  Probeer gratis
+                </Link>
+                <Link href="/app" className="inline-flex h-12 items-center justify-center rounded-lg border border-border bg-background px-5 text-sm font-semibold">
+                  Inloggen
+                </Link>
+              </div>
             </div>
           </div>
+          <div className="px-4 pb-2 md:hidden">
+            <Image
+              src="/landing/hero-vakman.webp"
+              alt="Vakman bekijkt op zijn telefoon hoe een bericht een offerte wordt"
+              width={1920}
+              height={1080}
+              priority
+              sizes="100vw"
+              className="aspect-video w-full rounded-3xl object-cover object-[68%_center]"
+            />
+          </div>
+        </section>
+
+        <section className="mx-auto w-full max-w-6xl px-4 py-10">
           <TrustBadges />
         </section>
 
@@ -104,9 +134,13 @@ export default function LandingPage() {
           <h2 className="text-3xl tracking-tight sm:text-4xl">Waarom GeregeldWerk anders is</h2>
           <ul className="mt-6 grid gap-3 sm:grid-cols-2">
             {reasons.map((reason) => (
-              <li key={reason} className="flex items-start gap-3 rounded-2xl border border-border bg-card px-4 py-4">
-                <BrandCheck className="mt-0.5" />
-                <span>{reason}</span>
+              <li key={reason.text} className="flex items-start gap-3 rounded-2xl border border-border bg-card px-4 py-4">
+                {reason.icon ? (
+                  <Image src={reason.icon} alt="" width={32} height={32} unoptimized className="size-8 shrink-0" />
+                ) : (
+                  <BrandCheck className="mt-1 size-5" />
+                )}
+                <span>{reason.text}</span>
               </li>
             ))}
           </ul>
@@ -116,10 +150,20 @@ export default function LandingPage() {
           <h2 className="text-3xl tracking-tight sm:text-4xl">Zo werkt het</h2>
           <ol className="mt-6 grid gap-4 md:grid-cols-3">
             {steps.map((step, index) => (
-              <li key={step.title} className="rounded-3xl border border-border bg-card p-5">
-                <p className="text-sm font-semibold tracking-[0.16em] text-primary uppercase">Stap {index + 1}</p>
-                <h3 className="mt-3 font-heading text-2xl">{step.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{step.text}</p>
+              <li key={step.title} className="overflow-hidden rounded-3xl border border-border bg-card">
+                <Image
+                  src={step.image}
+                  alt=""
+                  width={1200}
+                  height={1200}
+                  sizes="(min-width: 768px) 30vw, 100vw"
+                  className="aspect-square w-full object-cover"
+                />
+                <div className="p-5">
+                  <p className="text-sm font-semibold tracking-[0.16em] text-primary uppercase">Stap {index + 1}</p>
+                  <h3 className="mt-3 font-heading text-2xl">{step.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{step.text}</p>
+                </div>
               </li>
             ))}
           </ol>

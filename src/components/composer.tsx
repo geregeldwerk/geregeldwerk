@@ -209,7 +209,7 @@ export function Composer() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-start gap-4">
-        <Image src="/brand/icoon.png" alt="" width={56} height={56} className="mt-1 hidden size-14 shrink-0 rounded-2xl sm:block" />
+        <Image src="/brand/icoon-512.png" alt="" width={56} height={56} className="mt-1 hidden size-14 shrink-0 rounded-2xl sm:block" />
         <div className="max-w-3xl">
         <p className="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase">Nieuw bericht</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">Wat heeft de klant gevraagd?</h1>
@@ -241,7 +241,7 @@ export function Composer() {
           </div>
         ) : (
           <p className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
-            <Image src="/brand/icoon.png" alt="" width={20} height={20} className="size-5 rounded-md" />
+            <Image src="/brand/icoon-512.png" alt="" width={20} height={20} className="size-5 rounded-md" />
             Nog geen appje. Plak er een, of tik een voorbeeld.
           </p>
         )}
