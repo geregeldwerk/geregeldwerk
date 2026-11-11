@@ -13,7 +13,13 @@ export async function GET() {
   return Response.json({
     tasks,
     appointments: data.appointments,
-    quotes: data.quotes.map((quote) => ({ id: quote.id, number: quote.number, customerName: quote.customerName })),
+    quotes: data.quotes.map((quote) => ({
+      id: quote.id,
+      number: quote.number,
+      customerName: quote.customerName,
+      customerId: quote.customerId ?? null,
+    })),
+    customers: data.customers.map((customer) => ({ id: customer.id, name: customer.name })),
   });
 }
 
@@ -27,11 +33,15 @@ export async function POST(request: Request) {
       detail: input.detail,
       dueDate: input.dueDate,
       quoteId: input.quoteId,
+      customerId: input.customerId,
       done: false,
       example: false,
       createdAt: new Date().toISOString(),
     };
     await getRepository().update((data) => {
+      if (!task.customerId && task.quoteId) {
+        task.customerId = data.quotes.find((quote) => quote.id === task.quoteId)?.customerId ?? null;
+      }
       data.tasks.unshift(task);
       copyStore(
         data,

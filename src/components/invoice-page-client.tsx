@@ -7,7 +7,8 @@ import { ErrorNote, LoadingNote } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/client/api";
 import { formatEuro } from "@/lib/domain/money";
-import type { Invoice, Quote } from "@/lib/domain/types";
+import type { Invoice, PaymentStatus, Quote } from "@/lib/domain/types";
+import { PAYMENT_STATUSES, PAYMENT_STATUS_LABEL } from "@/lib/domain/types";
 import { SCENARIO_LABEL, SEND_STATUS_LABEL } from "@/lib/peppol/spec";
 
 interface PeppolIssue {
@@ -48,6 +49,20 @@ export function InvoicePageClient() {
       cancelled = true;
     };
   }, [params.id]);
+
+  async function changePayment(paymentStatus: PaymentStatus) {
+    setError(null);
+    try {
+      await api(`/api/facturen/${params.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ paymentStatus }),
+      });
+      setNotice(`Betaalstatus staat op ${PAYMENT_STATUS_LABEL[paymentStatus]}.`);
+      load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Betaalstatus bijwerken mislukt.");
+    }
+  }
 
   async function send() {
     setBusy(true);
@@ -95,7 +110,22 @@ export function InvoicePageClient() {
             {invoice.example ? " · voorbeeld" : ""} · {formatEuro(invoice.totalCents)} incl. btw
           </p>
         </div>
-        <p className="rounded-full bg-secondary px-3 py-1 text-sm text-secondary-foreground">{SEND_STATUS_LABEL[status]}</p>
+        <div className="flex flex-col items-start gap-2">
+          <p className="rounded-full bg-secondary px-3 py-1 text-sm text-secondary-foreground">{SEND_STATUS_LABEL[status]}</p>
+          <label className="text-xs text-muted-foreground">
+            Betaalstatus
+            <select
+              aria-label="Betaalstatus"
+              className="mt-1 h-10 w-full rounded-lg border border-input bg-transparent px-2 text-sm text-foreground"
+              value={invoice.paymentStatus ?? "open"}
+              onChange={(event) => void changePayment(event.target.value as PaymentStatus)}
+            >
+              {PAYMENT_STATUSES.map((item) => (
+                <option key={item} value={item}>{PAYMENT_STATUS_LABEL[item]}</option>
+              ))}
+            </select>
+          </label>
+        </div>
       </div>
 
       {notice ? <p className="rounded-xl bg-secondary px-4 py-3 text-sm" role="status">{notice}</p> : null}

@@ -1,6 +1,7 @@
 import { connection } from "next/server";
-import { parseDraftBody, parseFollowUp } from "@/lib/api/draft";
+import { parseCustomerChoice, parseDraftBody, parseFollowUp } from "@/lib/api/draft";
 import { fromUnknownError, readJson } from "@/lib/api/http";
+import { attachCustomerChoice } from "@/lib/domain/customers";
 import { createQuote } from "@/lib/domain/quote";
 import type { Task } from "@/lib/domain/types";
 import { copyStore, withAudit } from "@/lib/oversight/engine";
@@ -20,6 +21,7 @@ export async function POST(request: Request) {
     const body = await readJson(request);
     const draft = parseDraftBody(body);
     const followUp = parseFollowUp(body);
+    const choice = parseCustomerChoice(body);
     const now = new Date();
     const repository = getRepository();
     const current = await repository.read();
@@ -28,6 +30,7 @@ export async function POST(request: Request) {
       current.quotes.map((item) => item.number),
       now,
     );
+    let linkedCustomerId: string | null = null;
     const task: Task | null = followUp
       ? {
           id: crypto.randomUUID(),
@@ -36,12 +39,17 @@ export async function POST(request: Request) {
           dueDate: null,
           done: false,
           quoteId: quote.id,
+          customerId: null,
           example: false,
           createdAt: now.toISOString(),
         }
       : null;
 
     await repository.update((data) => {
+      const linked = attachCustomerChoice(data, quote, choice, now);
+      quote.customerId = linked.customerId;
+      linkedCustomerId = linked.customerId;
+      if (task) task.customerId = linked.customerId;
       data.quotes.unshift(quote);
       if (task) data.tasks.unshift(task);
       copyStore(
@@ -53,7 +61,7 @@ export async function POST(request: Request) {
           outcome: "uitgevoerd",
           summary: `Conceptofferte ${quote.number} opgeslagen.`,
           input: { customerName: quote.customerName },
-          output: { quoteId: quote.id, taskId: task?.id ?? null },
+          output: { quoteId: quote.id, taskId: task?.id ?? null, customerId: linkedCustomerId },
           before: null,
           after: { number: quote.number, status: quote.status },
         }),

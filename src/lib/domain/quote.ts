@@ -50,6 +50,7 @@ export interface DraftQuoteInput {
   customerLegalId?: string;
   buyerReference?: string;
   vatScenario?: VatScenario;
+  customerId?: string | null;
 }
 
 export function assertQuoteStatus(value: string): QuoteStatus {
@@ -149,6 +150,7 @@ export function buildDraftQuote(
     customerLegalId: "",
     buyerReference: "",
     vatScenario: "standaard",
+    customerId: null,
     createdAt: now.toISOString(),
     updatedAt: now.toISOString(),
   };
@@ -173,6 +175,7 @@ export function createQuote(input: DraftQuoteInput, existingNumbers: readonly st
     notes: input.notes.trim(),
     vatRate,
     ...peppolFields(input),
+    customerId: input.customerId ?? null,
     createdAt: now.toISOString(),
     updatedAt: now.toISOString(),
   };
@@ -204,6 +207,7 @@ export function updateQuote(
     customerLegalId: patch.customerLegalId?.trim() ?? existing.customerLegalId,
     buyerReference: patch.buyerReference?.trim() ?? existing.buyerReference,
     vatScenario: patch.vatScenario ?? existing.vatScenario,
+    customerId: patch.customerId === undefined ? (existing.customerId ?? null) : patch.customerId,
     updatedAt: now.toISOString(),
   };
 
@@ -213,7 +217,7 @@ export function updateQuote(
       const review = reviewQuote({ ...next, status });
       if (review.blockers.length > 0) {
         throw new QuoteInputError(
-          "Deze offerte is nog niet klaar om te versturen of te accepteren.",
+          "Deze offerte is nog niet klaar om te versturen, te accepteren of af te wijzen.",
           review.blockers,
         );
       }

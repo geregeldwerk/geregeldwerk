@@ -1,4 +1,4 @@
-export const QUOTE_STATUSES = ["concept", "verstuurd", "geaccepteerd"] as const;
+export const QUOTE_STATUSES = ["concept", "verstuurd", "geaccepteerd", "afgewezen"] as const;
 
 export type QuoteStatus = (typeof QUOTE_STATUSES)[number];
 
@@ -6,6 +6,38 @@ export const STATUS_LABEL: Record<QuoteStatus, string> = {
   concept: "Concept",
   verstuurd: "Verstuurd",
   geaccepteerd: "Geaccepteerd",
+  afgewezen: "Afgewezen",
+};
+
+export const CUSTOMER_TYPES = ["particulier", "zakelijk"] as const;
+
+export type CustomerType = (typeof CUSTOMER_TYPES)[number];
+
+export const CUSTOMER_TYPE_LABEL: Record<CustomerType, string> = {
+  particulier: "Particulier",
+  zakelijk: "Zakelijk",
+};
+
+export const PIPELINE_STATUSES = ["lead", "offerte_verstuurd", "gewonnen", "verloren"] as const;
+
+export type PipelineStatus = (typeof PIPELINE_STATUSES)[number];
+
+export const PIPELINE_LABEL: Record<PipelineStatus, string> = {
+  lead: "Lead",
+  offerte_verstuurd: "Offerte verstuurd",
+  gewonnen: "Gewonnen",
+  verloren: "Verloren",
+};
+
+export const PAYMENT_STATUSES = ["open", "betaald", "herinnering", "oninbaar"] as const;
+
+export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
+
+export const PAYMENT_STATUS_LABEL: Record<PaymentStatus, string> = {
+  open: "Open",
+  betaald: "Betaald",
+  herinnering: "Herinnering",
+  oninbaar: "Oninbaar",
 };
 
 export const UNITS = ["stuk", "uur", "meter", "m²", "set", "post"] as const;
@@ -85,6 +117,8 @@ export interface Quote {
   customerLegalId?: string;
   buyerReference?: string;
   vatScenario?: VatScenario;
+  /** Koppeling naar de klantkaart. Null als de kaart bewust is losgemaakt. */
+  customerId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -96,6 +130,7 @@ export interface Task {
   dueDate: string | null;
   done: boolean;
   quoteId: string | null;
+  customerId?: string | null;
   example: boolean;
   createdAt: string;
 }
@@ -120,6 +155,11 @@ export interface CompanySettings {
   enterpriseNumber?: string;
   /** Betaaltermijn van een factuur, in dagen. */
   paymentTermDays?: number;
+  /**
+   * Bewaartermijn in dagen voor een lead die op verloren staat.
+   * Null: de eigenaar heeft nog geen termijn gekozen.
+   */
+  lostLeadRetentionDays?: number | null;
 }
 
 export const ACTION_TYPES = [
@@ -271,6 +311,9 @@ export interface Invoice {
   transmissionId?: string | null;
   sentAt?: string | null;
   sendMessage?: string | null;
+  customerId?: string | null;
+  paymentStatus?: PaymentStatus;
+  paymentUpdatedAt?: string | null;
 }
 
 export interface Expense {
@@ -288,6 +331,7 @@ export interface Appointment {
   customerName: string;
   when: string;
   quoteId: string | null;
+  customerId?: string | null;
   createdAt: string;
   example: boolean;
   simulated: true;
@@ -319,6 +363,44 @@ export interface LeadEntry {
   example: boolean;
 }
 
+export interface Customer {
+  id: string;
+  name: string;
+  type: CustomerType;
+  phone: string;
+  email: string;
+  address: string;
+  country: CountryCode;
+  /** Btw-nummer of ondernemingsnummer. */
+  vatOrEnterpriseNumber: string;
+  source: string;
+  pipelineStatus: PipelineStatus;
+  lossReason: string;
+  tags: string[];
+  /** Datum jjjj-mm-dd, of null als er geen einddatum is. */
+  retainUntil: string | null;
+  example: boolean;
+  /** Lead waaruit deze kaart is gemaakt, zodat migratie niet dubbel telt. */
+  sourceLeadId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CustomerNote {
+  id: string;
+  customerId: string;
+  text: string;
+  at: string;
+  quoteId: string | null;
+  invoiceId: string | null;
+  example: boolean;
+}
+
+/** Bijgehouden zodat een verwijderde leadkaart niet opnieuw uit het logboek komt. */
+export interface CustomerMigrationState {
+  convertedLeadIds: string[];
+}
+
 export interface StoreData {
   quotes: Quote[];
   tasks: Task[];
@@ -332,6 +414,9 @@ export interface StoreData {
   appointments: Appointment[];
   posts: SocialPost[];
   leads: LeadEntry[];
+  customers: Customer[];
+  customerNotes: CustomerNote[];
+  customerMigration: CustomerMigrationState;
 }
 
 export interface Totals {

@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import { parseSettings } from "@/lib/api/draft";
 import { fromUnknownError, readJson } from "@/lib/api/http";
+import { applyLostLeadRetention } from "@/lib/domain/customers";
 import { copyStore, withAudit } from "@/lib/oversight/engine";
 import { OWNER } from "@/lib/oversight/permissions";
 import { getRepository } from "@/lib/storage";
@@ -21,6 +22,7 @@ export async function PUT(request: Request) {
     await getRepository().update((data) => {
       const before = data.settings;
       data.settings = settings;
+      applyLostLeadRetention(data, new Date());
       copyStore(
         data,
         withAudit(data, {

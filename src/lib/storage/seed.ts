@@ -1,3 +1,4 @@
+import { migrateCustomers } from "@/lib/domain/customers";
 import type {
   Approval,
   AuditEntry,
@@ -31,9 +32,15 @@ export function createSeedSettings(): CompanySettings {
     country: "NL",
     enterpriseNumber: "",
     paymentTermDays: 14,
+    lostLeadRetentionDays: null,
     footerNote:
       "Fictieve voorbeeldgegevens. Prijzen op een offerte komen van jou, niet van de assistent.",
   };
+}
+
+function normalizeRetention(value: unknown): number | null {
+  if (typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 3650) return value;
+  return null;
 }
 
 export function normalizeSettings(input: Partial<CompanySettings> | undefined): CompanySettings {
@@ -47,6 +54,7 @@ export function normalizeSettings(input: Partial<CompanySettings> | undefined): 
       typeof input?.paymentTermDays === "number" && Number.isInteger(input.paymentTermDays)
         ? input.paymentTermDays
         : seed.paymentTermDays,
+    lostLeadRetentionDays: normalizeRetention(input?.lostLeadRetentionDays),
   };
 }
 
@@ -150,6 +158,35 @@ export function createSeedData(now = new Date("2026-03-16T09:00:00.000Z")): Stor
       vatRate: 0.21,
       createdAt: "2026-03-02T09:15:00.000Z",
       updatedAt: "2026-03-04T16:45:00.000Z",
+    },
+    {
+      id: "quote-voorbeeld-afgewezen",
+      number: "OFF-2026-004",
+      status: "afgewezen",
+      example: true,
+      customerName: "Firma Voorbeeld BV",
+      customerPhone: "0113-000000",
+      customerEmail: "info@firma-voorbeeld.test",
+      location: "Industrieweg 1, Hulst",
+      jobDescription: "Groepenkast uitbreiden",
+      requestedDate: "april 2026",
+      sourceText: "Firma Voorbeeld BV vraagt een prijs voor een extra groep. Fictief, geen echt bedrijf.",
+      lines: [
+        {
+          id: "line-seed-4",
+          description: "Groepenkast uitbreiden",
+          quantity: 1,
+          unit: "post",
+          unitPriceCents: 24000,
+        },
+      ],
+      notes: "Voorbeeld van een afgewezen offerte.",
+      vatRate: 0.21,
+      customerCountry: "NL",
+      customerVat: "NL000000001B00",
+      customerLegalId: "00000001",
+      createdAt: "2026-03-08T11:00:00.000Z",
+      updatedAt: "2026-03-09T15:00:00.000Z",
     },
   ];
 
@@ -339,7 +376,7 @@ export function createSeedData(now = new Date("2026-03-16T09:00:00.000Z")): Stor
   ];
 
   void now;
-  return {
+  return migrateCustomers({
     quotes,
     tasks,
     settings,
@@ -352,5 +389,8 @@ export function createSeedData(now = new Date("2026-03-16T09:00:00.000Z")): Stor
     appointments: [],
     posts,
     leads,
-  };
+    customers: [],
+    customerNotes: [],
+    customerMigration: { convertedLeadIds: [] },
+  });
 }

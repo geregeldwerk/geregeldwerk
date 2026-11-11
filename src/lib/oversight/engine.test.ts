@@ -30,6 +30,9 @@ function baseStore(): StoreData {
     appointments: [],
     posts: [],
     leads: [],
+    customers: [],
+    customerNotes: [],
+    customerMigration: { convertedLeadIds: [] },
   };
 }
 
@@ -104,9 +107,34 @@ describe("staande permissies", () => {
 
   it("stuurt een offerte van een bestaande klant binnen bedrag en tijd direct", () => {
     const store = baseStore();
+    store.customers.push({
+      id: "customer-pieter",
+      name: "Pieter de Vries",
+      type: "particulier",
+      phone: "06-00000000",
+      email: "pieter@example.test",
+      address: "Goes",
+      country: "NL",
+      vatOrEnterpriseNumber: "",
+      source: "Offerte",
+      pipelineStatus: "offerte_verstuurd",
+      lossReason: "",
+      tags: [],
+      retainUntil: null,
+      example: false,
+      sourceLeadId: null,
+      createdAt: DURING_HOURS.toISOString(),
+      updatedAt: DURING_HOURS.toISOString(),
+    });
     store.quotes.push(
-      quote({ id: "bekend", customerName: "Pieter de Vries", status: "verstuurd" }),
-      quote({ id: "nieuw", customerName: "Pieter de Vries", status: "concept", number: "OFF-2026-011" }),
+      quote({ id: "bekend", customerName: "Pieter de Vries", status: "verstuurd", customerId: "customer-pieter" }),
+      quote({
+        id: "nieuw",
+        customerName: "Pieter de Vries",
+        status: "concept",
+        number: "OFF-2026-011",
+        customerId: "customer-pieter",
+      }),
     );
     const result = requestAction(
       store,

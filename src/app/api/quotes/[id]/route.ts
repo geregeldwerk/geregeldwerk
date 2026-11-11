@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import { parseDraftBody, parseStatus } from "@/lib/api/draft";
 import { fromUnknownError, jsonError, readJson } from "@/lib/api/http";
+import { applyQuoteTransition } from "@/lib/domain/customers";
 import { updateQuote } from "@/lib/domain/quote";
 import { assertDirectStatusChange, copyStore, withAudit } from "@/lib/oversight/engine";
 import { OWNER } from "@/lib/oversight/permissions";
@@ -41,7 +42,13 @@ export async function PATCH(request: Request, context: RouteContext) {
     const quote = updateQuote(existing, { ...draft, status }, new Date());
     await repository.update((data) => {
       const index = data.quotes.findIndex((item) => item.id === id);
-      if (index >= 0) data.quotes[index] = quote;
+      if (index >= 0) {
+        const previous = data.quotes[index];
+        data.quotes[index] = quote;
+        if (previous && previous.status !== quote.status) {
+          applyQuoteTransition(data, data.quotes[index], previous.status, new Date());
+        }
+      }
       copyStore(
         data,
         withAudit(data, {

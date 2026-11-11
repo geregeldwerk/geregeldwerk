@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/client/api";
+import { downloadJson } from "@/lib/client/download";
 import type { CompanySettings } from "@/lib/domain/types";
 import { vatPercentsForCountry } from "@/lib/peppol/spec";
 import { settingsLookPlaceholder } from "@/lib/storage/seed";
@@ -134,11 +135,47 @@ export default function SettingsPage() {
           <Input id="paymentTerm" className="mt-1.5 h-10" type="number" min={1} max={365} value={settings.paymentTermDays ?? 14} onChange={(event) => patch("paymentTermDays", Number(event.target.value))} />
         </div>
         <div className="sm:col-span-2">
+          <Label htmlFor="retention">Bewaartermijn verloren leads (dagen)</Label>
+          <Input
+            id="retention"
+            className="mt-1.5 h-10"
+            type="number"
+            min={1}
+            max={3650}
+            placeholder="Leeg laten"
+            value={settings.lostLeadRetentionDays ?? ""}
+            onChange={(event) => patch("lostLeadRetentionDays", event.target.value === "" ? null : Number(event.target.value))}
+          />
+          <p className="mt-1.5 text-sm leading-6 text-muted-foreground">
+            Laat dit leeg zolang je zelf nog geen termijn hebt gekozen. Er wordt dan geen einddatum gezet en er wordt niets automatisch gewist.
+            Vul je dagen in, dan krijgt een lead die op verloren gaat een datum bij Bewaar tot. De privacytekst en deze termijn stel je vast vóór je live gaat.
+          </p>
+        </div>
+        <div className="sm:col-span-2">
           <Label htmlFor="footer">Tekst onderaan de offerte</Label>
           <Textarea id="footer" className="mt-1.5" value={settings.footerNote} onChange={(event) => patch("footerNote", event.target.value)} />
         </div>
         <Button type="button" className="h-10 sm:w-fit" disabled={busy} onClick={() => void save()}>{busy ? "Opslaan…" : "Bewaar gegevens"}</Button>
       </form>
+      <section className="rounded-2xl border border-border bg-card p-4">
+        <h2 className="font-heading text-xl">Klantdata</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+          De export bevat de klantkaarten, notities en de gekoppelde offertes, facturen, taken en afspraken op deze computer.
+          De UBL van een factuur zit er niet bij. Dit is geen privacyverklaring. Die tekst en de bewaartermijn hierboven moet je als eigenaar vaststellen vóór livegang.
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-3 h-10"
+          onClick={() => {
+            void api<unknown>("/api/klanten/export")
+              .then((data) => downloadJson("klanten.json", data))
+              .catch((caught: unknown) => setError(caught instanceof Error ? caught.message : "Export mislukt."));
+          }}
+        >
+          Exporteer alle klantdata
+        </Button>
+      </section>
     </div>
   );
 }

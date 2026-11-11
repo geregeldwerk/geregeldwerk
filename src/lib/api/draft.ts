@@ -76,10 +76,26 @@ export function parseSettings(body: unknown): CompanySettings {
     country,
     enterpriseNumber: "enterpriseNumber" in record ? stringField(record.enterpriseNumber, 20) : "",
     paymentTermDays: paymentTermField(record.paymentTermDays),
+    lostLeadRetentionDays: retentionField(record.lostLeadRetentionDays),
   };
 }
 
-export function parseTaskBody(body: unknown): Pick<Task, "title" | "detail" | "dueDate" | "quoteId"> {
+export function parseCustomerChoice(body: unknown): { customerId: string | null } {
+  const record = expectRecord(body);
+  const choice = record.customerChoice;
+  if (typeof choice !== "object" || choice === null || Array.isArray(choice)) {
+    throw new QuoteInputError("Bevestig eerst de klantkaart.");
+  }
+  const fields = choice as Record<string, unknown>;
+  if (fields.confirmed !== true) throw new QuoteInputError("Bevestig eerst de klantkaart.");
+  if (fields.customerId == null || fields.customerId === "") return { customerId: null };
+  if (typeof fields.customerId !== "string") throw new QuoteInputError("De gekozen klant is ongeldig.");
+  return { customerId: fields.customerId.slice(0, 80) };
+}
+
+export function parseTaskBody(body: unknown): Pick<Task, "title" | "detail" | "dueDate" | "quoteId"> & {
+  customerId: string | null;
+} {
   const record = expectRecord(body);
   const title = stringField(record.title, 160);
   if (!title) throw new QuoteInputError("Een taak heeft een titel nodig.");
@@ -88,6 +104,7 @@ export function parseTaskBody(body: unknown): Pick<Task, "title" | "detail" | "d
     detail: stringField(record.detail, 500),
     dueDate: dateField(record.dueDate),
     quoteId: optionalId(record.quoteId),
+    customerId: optionalId(record.customerId),
   };
 }
 
@@ -168,6 +185,14 @@ function optionalString(record: Record<string, unknown>, key: string, max: numbe
   return stringField(record[key], max);
 }
 
+function retentionField(value: unknown): number | null {
+  if (value == null || value === "") return null;
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 1 || value > 3650) {
+    throw new QuoteInputError("Bewaartermijn moet leeg zijn of een aantal dagen tussen 1 en 3650.");
+  }
+  return value;
+}
+
 function paymentTermField(value: unknown): number {
   const days = typeof value === "number" && Number.isFinite(value) ? value : 14;
   if (!Number.isInteger(days) || days < 1 || days > 365) {
@@ -178,6 +203,6 @@ function paymentTermField(value: unknown): number {
 
 function optionalId(value: unknown): string | null {
   if (value == null || value === "") return null;
-  if (typeof value !== "string") throw new QuoteInputError("Offerteverwijzing is ongeldig.");
+  if (typeof value !== "string") throw new QuoteInputError("Verwijzing is ongeldig.");
   return value.slice(0, 80);
 }

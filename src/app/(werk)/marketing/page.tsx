@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { ErrorNote, LoadingNote } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -147,7 +148,10 @@ export default function MarketingPage() {
       ) : null}
       <section className="rounded-2xl border border-border bg-card p-4">
         <h2 className="font-heading text-2xl">Groei / leads</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{leads.length} genoteerde leads, allemaal lokaal. Geen advertentieplatform.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {leads.length} genoteerde leads, allemaal lokaal. Geen advertentieplatform. Een nieuwe lead komt ook als klantkaart in de stap Lead.{" "}
+          <Link href="/klanten" className="underline">Open klanten</Link>.
+        </p>
         <form
           className="mt-3 grid gap-3 sm:grid-cols-3"
           onSubmit={(event) => {
