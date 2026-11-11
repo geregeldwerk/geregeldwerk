@@ -2,6 +2,7 @@
 
 import { Mic, Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -207,13 +208,16 @@ export function Composer() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="max-w-3xl">
-        <p className="text-xs tracking-[0.16em] text-muted-foreground uppercase">Nieuw bericht</p>
+      <div className="flex items-start gap-4">
+        <Image src="/brand/icoon-512.png" alt="" width={56} height={56} className="mt-1 hidden size-14 shrink-0 rounded-2xl sm:block" />
+        <div className="max-w-3xl">
+        <p className="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase">Nieuw bericht</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">Wat heeft de klant gevraagd?</h1>
-        <p className="mt-2 text-lg font-medium text-primary">Jij doet het werk, wij doen de rest</p>
+        <p className="mt-3 text-sm font-semibold tracking-[0.16em] text-primary uppercase">Jij doet het werk, wij doen de rest</p>
         <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
           Plak een appje of spreek het in. Je krijgt een conceptofferte. Prijzen laat ik leeg, die vul jij in.
         </p>
+        </div>
       </div>
 
       <p className="rounded-2xl border border-primary/20 bg-secondary px-4 py-3 text-sm leading-6 text-secondary-foreground shadow-sm shadow-primary/5">{providerNote}</p>
@@ -236,7 +240,10 @@ export function Composer() {
             </p>
           </div>
         ) : (
-          <p className="mb-3 text-sm text-muted-foreground">Nog geen appje. Plak er een, of tik een voorbeeld.</p>
+          <p className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
+            <Image src="/brand/icoon-512.png" alt="" width={20} height={20} className="size-5 rounded-md" />
+            Nog geen appje. Plak er een, of tik een voorbeeld.
+          </p>
         )}
         <Label htmlFor="message" className="sr-only">Bericht van de klant</Label>
         <Textarea
@@ -340,7 +347,7 @@ export function Composer() {
             )}
             {pricesOpen ? (
               <p className="mt-2 text-sm">
-                Prijzen zijn nog leeg. Dat is expres: Geregeldwerk verzint of kopieert geen bedragen.
+                Prijzen zijn nog leeg. Dat is expres: GeregeldWerk verzint of kopieert geen bedragen.
               </p>
             ) : null}
           </div>

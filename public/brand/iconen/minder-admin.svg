@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="#58da98" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <!-- Minder admin: stapel papieren wordt één document met vinkje -->
+  <path d="M10 16h16M12 12h16"/>
+  <rect x="8" y="16" width="16" height="20" rx="1.5"/>
+  <path d="M27 26h5"/>
+  <path d="M30 23l3 3-3 3"/>
+  <rect x="34" y="16" width="10" height="20" rx="1.5"/>
+  <path d="M36.5 26l2 2 4-5"/>
+</svg>

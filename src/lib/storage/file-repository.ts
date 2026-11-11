@@ -19,6 +19,10 @@ export function normalizeStore(input: Partial<StoreData> | null | undefined): St
     appointments: Array.isArray(input.appointments) ? input.appointments : [],
     posts: Array.isArray(input.posts) ? input.posts : [],
     leads: Array.isArray(input.leads) ? input.leads : [],
+    subscription: input.subscription ?? null,
+    billingPurchases: Array.isArray(input.billingPurchases) ? input.billingPurchases : [],
+    processedStripeEvents: Array.isArray(input.processedStripeEvents) ? input.processedStripeEvents : [],
+    waitlist: Array.isArray(input.waitlist) ? input.waitlist : [],
   };
 }
 

@@ -260,7 +260,7 @@ export function collectMissingInfo(
   }
   if (mentionsPrice(source)) {
     missing.push(
-      "Het bericht noemt een bedrag. Geregeldwerk neemt geen prijzen over; vul ze zelf in.",
+      "Het bericht noemt een bedrag. GeregeldWerk neemt geen prijzen over; vul ze zelf in.",
     );
   }
   return missing;

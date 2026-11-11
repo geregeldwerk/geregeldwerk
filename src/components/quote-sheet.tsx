@@ -15,7 +15,7 @@ export function QuoteSheet({ quote, settings }: { quote: Quote; settings: Compan
     <article className="quote-sheet mx-auto max-w-3xl bg-white px-6 py-8 text-neutral-900 shadow-sm ring-1 ring-black/10 sm:px-10 sm:py-12">
       <header className="flex flex-col gap-4 border-b border-neutral-200 pb-6 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs tracking-[0.16em] text-neutral-500 uppercase">Geregeldwerk</p>
+          <p className="text-xs tracking-[0.16em] text-neutral-500 uppercase">GeregeldWerk</p>
           <h1 className="mt-1 font-heading text-3xl text-neutral-950">{title}</h1>
           <p className="mt-1 text-sm text-neutral-600">
             {quote.number} · {STATUS_LABEL[quote.status]} · {dated}

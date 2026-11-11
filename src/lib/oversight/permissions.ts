@@ -22,7 +22,7 @@ export const MODE_LABEL: Record<PermissionMode, string> = {
 };
 
 export const OWNER = { kind: "mens" as const, label: "Eigenaar" };
-export const ASSISTANT = { kind: "ai" as const, label: "Geregeldwerk-assistent (mock)" };
+export const ASSISTANT = { kind: "ai" as const, label: "GeregeldWerk-assistent (mock)" };
 
 export type GateEffect = "uitvoeren" | "wachtrij" | "weigeren";
 

@@ -93,7 +93,7 @@ export default function MarketingPage() {
         <p className="text-xs tracking-[0.16em] text-muted-foreground uppercase">Marketing</p>
         <h1 className="mt-2 font-heading text-4xl tracking-tight">Posts en een groeilogboek</h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Concept, ingepland, gepubliceerd. Publiceren is een permissie en blijft een simulatie: Geregeldwerk praat niet met Instagram, Facebook of LinkedIn.
+          Concept, ingepland, gepubliceerd. Publiceren is een permissie en blijft een simulatie: GeregeldWerk praat niet met Instagram, Facebook of LinkedIn.
         </p>
       </div>
       {error ? <ErrorNote message={error} /> : null}

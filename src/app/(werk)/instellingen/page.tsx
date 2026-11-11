@@ -139,7 +139,44 @@ export default function SettingsPage() {
         </div>
         <Button type="button" className="h-10 sm:w-fit" disabled={busy} onClick={() => void save()}>{busy ? "Opslaan…" : "Bewaar gegevens"}</Button>
       </form>
+      <BillingPortal />
     </div>
+  );
+}
+
+function BillingPortal() {
+  const [message, setMessage] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function openPortal() {
+    setBusy(true);
+    setMessage(null);
+    try {
+      const response = await fetch("/api/stripe/portal", { method: "POST" });
+      const payload = (await response.json()) as { url?: string; error?: string };
+      if (!response.ok || !payload.url) {
+        setMessage(payload.error ?? "Het klantportaal is nu niet bereikbaar.");
+        return;
+      }
+      window.location.assign(payload.url);
+    } catch {
+      setMessage("Het klantportaal is nu niet bereikbaar.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="rounded-2xl border border-border bg-card p-4">
+      <h2 className="font-heading text-xl">Abonnement</h2>
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+        Wijzig of zeg je abonnement op in het klantportaal van Stripe. Zonder testsleutel of zonder eerdere betaling blijft dit een melding.
+      </p>
+      <Button id="beheer-abonnement" type="button" className="mt-4 h-10" disabled={busy} onClick={() => void openPortal()}>
+        {busy ? "Portaal openen…" : "Beheer abonnement"}
+      </Button>
+      {message ? <p className="mt-3 text-sm" role="status">{message}</p> : null}
+    </section>
   );
 }
 

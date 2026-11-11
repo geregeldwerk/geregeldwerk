@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 export function LoadingNote({ label }: { label: string }) {
@@ -38,9 +39,11 @@ export function ErrorNote({
 
 export function EmptyNote({ title, text }: { title: string; text: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border bg-card px-5 py-8">
-      <h2 className="font-heading text-xl">{title}</h2>
+    <div className="rounded-2xl border border-dashed border-primary/35 bg-card px-5 py-8">
+      <Image src="/brand/icoon-512.png" alt="" width={48} height={48} className="size-12 rounded-2xl" />
+      <h2 className="mt-4 font-heading text-xl">{title}</h2>
       <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">{text}</p>
+      <p className="mt-4 text-xs font-semibold tracking-[0.16em] text-primary uppercase">Jij doet het werk, wij doen de rest</p>
     </div>
   );
 }
