@@ -1,12 +1,13 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { migrateCustomers, migrationPending } from "@/lib/domain/customers";
 import type { StoreData } from "@/lib/domain/types";
 import { createSeedData, normalizeSettings } from "@/lib/storage/seed";
 
 export function normalizeStore(input: Partial<StoreData> | null | undefined): StoreData {
   const seed = createSeedData();
   if (!input || !Array.isArray(input.quotes) || !input.settings) return seed;
-  return {
+  return migrateCustomers({
     quotes: input.quotes,
     tasks: Array.isArray(input.tasks) ? input.tasks : [],
     settings: normalizeSettings(input.settings),
@@ -19,7 +20,13 @@ export function normalizeStore(input: Partial<StoreData> | null | undefined): St
     appointments: Array.isArray(input.appointments) ? input.appointments : [],
     posts: Array.isArray(input.posts) ? input.posts : [],
     leads: Array.isArray(input.leads) ? input.leads : [],
-  };
+    customers: Array.isArray(input.customers) ? input.customers : [],
+    customerNotes: Array.isArray(input.customerNotes) ? input.customerNotes : [],
+    customerMigration:
+      input.customerMigration && Array.isArray(input.customerMigration.convertedLeadIds)
+        ? input.customerMigration
+        : { convertedLeadIds: [] },
+  });
 }
 
 export interface Repository {
@@ -33,7 +40,13 @@ export function createFileRepository(filePath: string): Repository {
   async function ensure(): Promise<StoreData> {
     try {
       const raw = await readFile(filePath, "utf8");
-      return parseStore(raw);
+      const parsed = JSON.parse(raw) as Partial<StoreData>;
+      const store = parseStore(raw);
+      if (migrationPending(parsed)) {
+        await mkdir(path.dirname(filePath), { recursive: true });
+        await writeFile(filePath, JSON.stringify(store, null, 2));
+      }
+      return store;
     } catch (error) {
       const code = (error as NodeJS.ErrnoException).code;
       if (code !== "ENOENT") throw error;

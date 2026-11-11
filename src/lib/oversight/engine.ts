@@ -1,3 +1,4 @@
+import { applyQuoteTransition, ensureCustomerForLead, hasExistingCustomerRecord } from "@/lib/domain/customers";
 import { calculateTotals } from "@/lib/domain/money";
 import { QuoteInputError, updateQuote } from "@/lib/domain/quote";
 import { createInvoiceFromQuote } from "@/lib/peppol/invoice";
@@ -570,6 +571,7 @@ export function addLead(
     example: false,
   };
   draft.leads.unshift(entry);
+  const customer = ensureCustomerForLead(draft, entry, now);
   return withAudit(draft, {
     at: now.toISOString(),
     actor,
@@ -577,9 +579,9 @@ export function addLead(
     outcome: "uitgevoerd",
     summary: `Lead genoteerd: ${entry.name || "zonder naam"} (${entry.source || "onbekende bron"}).`,
     input: lead,
-    output: entry,
+    output: { lead: entry, customerId: customer.id },
     before: null,
-    after: entry,
+    after: { lead: entry, customerId: customer.id },
   });
 }
 
@@ -650,21 +652,11 @@ function validateRules(rules: PermissionRule[]): string | null {
   return null;
 }
 
-function customerKey(name: string): string {
-  return name.trim().toLocaleLowerCase("nl-NL");
-}
-
-function isExistingCustomer(store: StoreData, name: string, exceptQuoteId?: string): boolean {
-  const key = customerKey(name);
-  if (!key) return false;
-  const knownQuote = store.quotes.some(
-    (quote) =>
-      quote.id !== exceptQuoteId &&
-      customerKey(quote.customerName) === key &&
-      quote.status !== "concept",
-  );
-  const knownInvoice = store.invoices.some((invoice) => customerKey(invoice.customerName) === key);
-  return knownQuote || knownInvoice;
+function knownCustomer(
+  store: StoreData,
+  input: { customerId?: string | null; email?: string; phone?: string; exceptQuoteId?: string },
+): boolean {
+  return hasExistingCustomerRecord(store, input);
 }
 
 function deriveContext(
@@ -702,10 +694,15 @@ function deriveContext(
     if (!payload.title.trim() || !payload.customerName.trim() || !payload.when.trim()) {
       return { ok: false, error: "Afspraak mist titel, klant of moment." };
     }
+    const relatedQuote = payload.quoteId ? store.quotes.find((item) => item.id === payload.quoteId) : undefined;
     return {
       ok: true,
       amountCents: null,
-      existingCustomer: isExistingCustomer(store, payload.customerName),
+      existingCustomer: knownCustomer(store, {
+        customerId: relatedQuote?.customerId,
+        email: relatedQuote?.customerEmail,
+        phone: relatedQuote?.customerPhone,
+      }),
       customerName: payload.customerName,
       summary: `Afspraak: ${payload.title}`,
     };
@@ -724,7 +721,12 @@ function deriveContext(
     return {
       ok: true,
       amountCents: created.invoice.totalCents,
-      existingCustomer: isExistingCustomer(store, quote.customerName, quote.id),
+      existingCustomer: knownCustomer(store, {
+        customerId: quote.customerId,
+        email: quote.customerEmail,
+        phone: quote.customerPhone,
+        exceptQuoteId: quote.id,
+      }),
       customerName: quote.customerName,
       summary: `Factuur maken voor ${quote.number}`,
     };
@@ -733,7 +735,12 @@ function deriveContext(
   return {
     ok: true,
     amountCents: totals.complete ? totals.totalCents : null,
-    existingCustomer: isExistingCustomer(store, quote.customerName, quote.id),
+    existingCustomer: knownCustomer(store, {
+      customerId: quote.customerId,
+      email: quote.customerEmail,
+      phone: quote.customerPhone,
+      exceptQuoteId: quote.id,
+    }),
     customerName: quote.customerName,
     summary: `Offerte versturen ${quote.number}`,
   };
@@ -766,6 +773,7 @@ function applyPayload(store: StoreData, payload: ActionPayload, now: Date): { ok
       customerName: payload.customerName.trim(),
       when: payload.when.trim(),
       quoteId: payload.quoteId,
+      customerId: (payload.quoteId ? store.quotes.find((item) => item.id === payload.quoteId)?.customerId : null) ?? null,
       createdAt: now.toISOString(),
       example: false,
       simulated: true,
@@ -777,7 +785,9 @@ function applyPayload(store: StoreData, payload: ActionPayload, now: Date): { ok
   const quote = store.quotes[index];
   if (payload.type === "offerte_versturen") {
     try {
+      const previous = quote.status;
       store.quotes[index] = updateQuote(quote, { status: "verstuurd" }, now);
+      applyQuoteTransition(store, store.quotes[index], previous, now);
       return { ok: true };
     } catch (error) {
       return { ok: false, error: error instanceof QuoteInputError ? error.message : "Versturen mislukt." };

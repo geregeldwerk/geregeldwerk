@@ -13,7 +13,8 @@ import { ApiError, api } from "@/lib/client/api";
 import { collectMissingInfo } from "@/lib/domain/extract";
 import { linesFromExtraction, toDraftLines, type LineDraft } from "@/lib/domain/lines";
 import { parseQuantity } from "@/lib/domain/money";
-import type { CompanySettings, Extraction, Quote, Task } from "@/lib/domain/types";
+import type { CompanySettings, Customer, Extraction, Quote, Task } from "@/lib/domain/types";
+import { PIPELINE_LABEL } from "@/lib/domain/types";
 import { EXAMPLE_MESSAGES } from "@/lib/examples";
 
 interface SpeechSession {
@@ -43,6 +44,9 @@ interface ReviewState {
   makeFollowUp: boolean;
   followTitle: string;
   followDetail: string;
+  matches: Customer[];
+  selectedCustomerId: string | null;
+  customerConfirmed: boolean;
 }
 
 export function Composer() {
@@ -83,6 +87,38 @@ export function Composer() {
       .catch(() => setDefaultVat(0.21));
     return () => recognition.current?.stop();
   }, []);
+
+  const suggestionName = review?.customerName;
+  const suggestionEmail = review?.customerEmail;
+  const suggestionPhone = review?.customerPhone;
+
+  useEffect(() => {
+    if (suggestionName === undefined || suggestionEmail === undefined || suggestionPhone === undefined) return;
+    const handle = window.setTimeout(() => {
+      void api<{ matches: Customer[] }>("/api/klanten/voorstel", {
+        method: "POST",
+        body: JSON.stringify({ name: suggestionName, email: suggestionEmail, phone: suggestionPhone }),
+      })
+        .then((result) => {
+          setReview((current) => {
+            if (!current || current.customerName !== suggestionName || current.customerEmail !== suggestionEmail || current.customerPhone !== suggestionPhone) {
+              return current;
+            }
+            const only = result.matches.length === 1 ? result.matches[0].id : null;
+            const stillThere = result.matches.some((item) => item.id === current.selectedCustomerId);
+            const selectedCustomerId = stillThere ? current.selectedCustomerId : only;
+            return {
+              ...current,
+              matches: result.matches,
+              selectedCustomerId,
+              customerConfirmed: selectedCustomerId === current.selectedCustomerId ? current.customerConfirmed : false,
+            };
+          });
+        })
+        .catch(() => undefined);
+    }, 250);
+    return () => window.clearTimeout(handle);
+  }, [suggestionName, suggestionEmail, suggestionPhone]);
 
   function toggleSpeech() {
     const browser = window as Window & {
@@ -142,6 +178,9 @@ export function Composer() {
         makeFollowUp: Boolean(extraction.followUp),
         followTitle: extraction.followUp?.title ?? "",
         followDetail: extraction.followUp?.detail ?? "",
+        matches: [],
+        selectedCustomerId: null,
+        customerConfirmed: false,
       });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Het bericht kon niet worden gelezen.");
@@ -173,6 +212,10 @@ export function Composer() {
           followUp: review.makeFollowUp
             ? { title: review.followTitle, detail: review.followDetail }
             : null,
+          customerChoice: {
+            confirmed: true,
+            customerId: review.selectedCustomerId,
+          },
         }),
       });
       router.push(`/offertes/${result.quote.id}`);
@@ -345,6 +388,61 @@ export function Composer() {
             ) : null}
           </div>
 
+          <div className="mt-5 rounded-xl border border-border bg-muted/50 px-4 py-3">
+            <h3 className="text-sm font-medium">Klantkaart</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {review.matches.length > 0
+                ? "Dit bericht lijkt op een bestaande klant. Kies die kaart, of maak een nieuwe. Bevestig daarna."
+                : "Geen bestaande klant met dit e-mailadres, telefoonnummer of deze naam. Bevestig een nieuwe klantkaart."}
+            </p>
+            <div className="mt-3 grid gap-2" role="radiogroup" aria-label="Klantkaart">
+              {review.matches.map((customer) => (
+                <label key={customer.id} className="flex items-start gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name="customer-choice"
+                    className="mt-1"
+                    checked={review.selectedCustomerId === customer.id}
+                    onChange={() => setReview({ ...review, selectedCustomerId: customer.id, customerConfirmed: false })}
+                  />
+                  <span>
+                    <span className="font-medium">{customer.name || "Naam ontbreekt"}</span>
+                    <span className="mt-0.5 block text-muted-foreground">
+                      Bestaande klant · {PIPELINE_LABEL[customer.pipelineStatus]}
+                      {customer.email ? ` · ${customer.email}` : ""}
+                      {customer.phone ? ` · ${customer.phone}` : ""}
+                    </span>
+                  </span>
+                </label>
+              ))}
+              <label className="flex items-start gap-2 text-sm">
+                <input
+                  type="radio"
+                  name="customer-choice"
+                  className="mt-1"
+                  checked={review.selectedCustomerId === null}
+                  onChange={() => setReview({ ...review, selectedCustomerId: null, customerConfirmed: false })}
+                />
+                <span>
+                  <span className="font-medium">Nieuwe klantkaart</span>
+                  <span className="mt-0.5 block text-muted-foreground">
+                    {review.customerName.trim() || "Naam ontbreekt"}
+                    {review.customerEmail.trim() ? ` · ${review.customerEmail.trim()}` : ""}
+                    {review.customerPhone.trim() ? ` · ${review.customerPhone.trim()}` : ""}
+                  </span>
+                </span>
+              </label>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              className="mt-3 h-10"
+              onClick={() => setReview({ ...review, customerConfirmed: true })}
+            >
+              {review.customerConfirmed ? "Klantkaart bevestigd" : "Bevestig klantkaart"}
+            </Button>
+          </div>
+
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <Field label="Klant" id="customerName">
               <Input
@@ -352,7 +450,7 @@ export function Composer() {
                 className="h-10"
                 autoComplete="off"
                 value={review.customerName}
-                onChange={(event) => setReview({ ...review, customerName: event.target.value })}
+                onChange={(event) => setReview({ ...review, customerName: event.target.value, customerConfirmed: false })}
               />
             </Field>
             <Field label="Plaats of adres" id="location">
@@ -370,7 +468,7 @@ export function Composer() {
                 className="h-10"
                 autoComplete="off"
                 value={review.customerPhone}
-                onChange={(event) => setReview({ ...review, customerPhone: event.target.value })}
+                onChange={(event) => setReview({ ...review, customerPhone: event.target.value, customerConfirmed: false })}
               />
             </Field>
             <Field label="E-mail" id="customerEmail">
@@ -379,7 +477,7 @@ export function Composer() {
                 className="h-10"
                 autoComplete="off"
                 value={review.customerEmail}
-                onChange={(event) => setReview({ ...review, customerEmail: event.target.value })}
+                onChange={(event) => setReview({ ...review, customerEmail: event.target.value, customerConfirmed: false })}
               />
             </Field>
             <Field label="Gewenste datum" id="requestedDate">
@@ -458,7 +556,7 @@ export function Composer() {
             ) : null}
           </div>
 
-          <Button type="button" className="mt-5 h-10 px-4" disabled={busy !== null} onClick={() => void saveDraft()}>
+          <Button type="button" className="mt-5 h-10 px-4" disabled={busy !== null || !review.customerConfirmed} onClick={() => void saveDraft()}>
             {busy === "save" ? "Opslaan…" : "Opslaan als concept"}
           </Button>
         </section>

@@ -93,7 +93,13 @@ Die JSON bevat permissies, open goedkeuringen, open permissievoorstellen en het 
 
 ## Privacy
 
-De voorbeelden (Jansen, Pieter de Vries, Mevrouw De Test, Familie Vermeer, Installatiebedrijf Voorbeeld) zijn fictief. Zet geen echte klantgegevens in deze prototype. Gegevens staan in `data/store.json` op deze computer. Verwijder dat bestand om de voorbeelden terug te zetten.
+De voorbeelden (Jansen, Pieter de Vries, Mevrouw De Test, Familie Vermeer, Firma Voorbeeld BV, Installatiebedrijf Voorbeeld) zijn fictief. Zet geen echte klantgegevens in deze prototype. Gegevens staan in `data/store.json` op deze computer. Verwijder dat bestand om de voorbeelden terug te zetten.
+
+## Klanten
+
+`/klanten` toont de klantkaarten, met een lijst en een pijplijn (`?weergave=pijplijn`). Bestaande offertes, facturen en het leadlogboek worden bij het openen omgezet naar klanten. Er wordt niets gewist. De klantgegevens op een factuur blijven staan als je de kaart verwijdert.
+
+De bewaartermijn voor verloren leads staat standaard leeg. De privacytekst en de bewaartermijn moeten vóór livegang door de eigenaar worden vastgesteld. Deze prototype bevat geen juridische tekst.
 
 ## Later aansluiten
 
@@ -105,7 +111,8 @@ Wel:
 
 - Bericht plakken of inspreken (spraakherkenning van de browser, Nederlands; in Firefox meestal niet beschikbaar).
 - Conceptofferte controleren, prijzen invullen, bewaren, als PDF downloaden of afdrukken.
-- Status concept, verstuurd en geaccepteerd.
+- Status concept, verstuurd, geaccepteerd en afgewezen.
+- Klantkaarten, een pijplijn en een lokale export van klantdata.
 - Permissies, wachtrij, noodstop, auditlog en JSON-export.
 - Factuur uit een geaccepteerde offerte, met Peppol BIS Billing 3.0 UBL en verzending via de mock.
 - Gesimuleerde bon, afspraak en social post.
@@ -114,6 +121,7 @@ Wel:
 Niet:
 
 - Echt mailen, WhatsApp, boekhouden of posten op sociale netwerken.
+- Een koppeling vanuit WhatsApp, mail, Meta of een webformulier naar de klantkaart.
 - Een echt Peppol Access Point, kvk-controle of btw-aangifte.
 - Echte betalingen.
 - Een tweede persoon als verplichte fiatteur. Jij bent in deze demo de eigenaar én de fiatteur; het verschil is de expliciete goedkeuring, niet een apart account.

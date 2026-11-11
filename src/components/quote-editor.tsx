@@ -157,7 +157,20 @@ export function QuoteEditor({
     setError(null);
     try {
       const saved = await persist("geaccepteerd");
-      setNotice(`${saved.number} staat op geaccepteerd.`);
+      setNotice(`${saved.number} staat op geaccepteerd. De klantkaart gaat naar gewonnen.`);
+    } catch (caught) {
+      showError(caught);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function onReject() {
+    setBusy("afwijzen");
+    setError(null);
+    try {
+      const saved = await persist("afgewezen");
+      setNotice(`${saved.number} staat op afgewezen. De klantkaart gaat naar verloren, tenzij er nog een andere open offerte is.`);
     } catch (caught) {
       showError(caught);
     } finally {
@@ -273,6 +286,11 @@ export function QuoteEditor({
         <div>
           <p className="text-xs tracking-[0.16em] text-muted-foreground uppercase">{quote.number}</p>
           <h1 className="mt-1 font-heading text-4xl">{customerName || "Naamloze offerte"}</h1>
+          {quote.customerId ? (
+            <Link href={`/klanten/${quote.customerId}`} className="mt-1 inline-block text-sm underline-offset-4 hover:underline">
+              Klantkaart
+            </Link>
+          ) : null}
         </div>
         <div className="flex flex-wrap gap-2">
           <StatusBadge status={quote.status} />
@@ -426,11 +444,14 @@ export function QuoteEditor({
         <Button type="button" className="h-10" disabled={busy !== null} onClick={() => void onSave()}>
           {busy === "opslaan" ? "Opslaan…" : "Concept opslaan"}
         </Button>
-        <Button type="button" variant="secondary" className="h-10" disabled={busy !== null || !ready || quote.status === "verstuurd" || quote.status === "geaccepteerd"} onClick={() => void onSend()}>
+        <Button type="button" variant="secondary" className="h-10" disabled={busy !== null || !ready || quote.status === "verstuurd" || quote.status === "geaccepteerd" || quote.status === "afgewezen"} onClick={() => void onSend()}>
           {busy === "versturen" ? "Bezig…" : "Versturen via permissie"}
         </Button>
         <Button type="button" variant="outline" className="h-10" disabled={busy !== null || quote.status !== "verstuurd" || !ready} onClick={() => void onAccept()}>
           Markeer geaccepteerd
+        </Button>
+        <Button type="button" variant="outline" className="h-10" disabled={busy !== null || quote.status !== "verstuurd" || !ready} onClick={() => void onReject()}>
+          {busy === "afwijzen" ? "Bezig…" : "Markeer afgewezen"}
         </Button>
         {invoice ? (
           <Button type="button" variant="outline" className="h-10" nativeButton={false} render={<Link href={`/facturen/${invoice.id}`} />}>

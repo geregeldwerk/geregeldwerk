@@ -14,12 +14,19 @@ interface QuoteRef {
   id: string;
   number: string;
   customerName: string;
+  customerId: string | null;
+}
+
+interface CustomerRef {
+  id: string;
+  name: string;
 }
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[] | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [quotes, setQuotes] = useState<QuoteRef[]>([]);
+  const [customers, setCustomers] = useState<CustomerRef[]>([]);
   const [title, setTitle] = useState("");
   const [detail, setDetail] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -27,11 +34,12 @@ export default function TasksPage() {
   const [error, setError] = useState<string | null>(null);
 
   function load() {
-    void api<{ tasks: Task[]; appointments: Appointment[]; quotes: QuoteRef[] }>("/api/taken")
+    void api<{ tasks: Task[]; appointments: Appointment[]; quotes: QuoteRef[]; customers: CustomerRef[] }>("/api/tasks")
       .then((data) => {
         setTasks(data.tasks);
         setAppointments(data.appointments);
         setQuotes(data.quotes);
+        setCustomers(data.customers);
       })
       .catch((caught: unknown) => setError(caught instanceof Error ? caught.message : "Laden mislukt."));
   }
@@ -115,8 +123,13 @@ export default function TasksPage() {
                 <span className={task.done ? "text-muted-foreground line-through" : "font-medium"}>{task.title}</span>
                 {task.example ? <span className="ml-2 text-xs text-muted-foreground">voorbeeld</span> : null}
                 <span className="mt-1 block text-muted-foreground">{task.detail}</span>
+                {task.customerId ? (
+                  <Link href={`/klanten/${task.customerId}`} className="mt-1 inline-block underline">
+                    {customers.find((customer) => customer.id === task.customerId)?.name || "Klantkaart"}
+                  </Link>
+                ) : null}
                 {task.quoteId ? (
-                  <Link href={`/offertes/${task.quoteId}`} className="mt-1 inline-block underline">Bijbehorende offerte</Link>
+                  <Link href={`/offertes/${task.quoteId}`} className="mt-1 ml-3 inline-block underline">Bijbehorende offerte</Link>
                 ) : null}
               </span>
             </label>
@@ -130,7 +143,15 @@ export default function TasksPage() {
           {appointments.map((item) => (
             <li key={item.id} className="rounded-xl border border-border bg-card px-4 py-3 text-sm">
               <p className="font-medium">{item.title}</p>
-              <p className="text-muted-foreground">{item.customerName} · {item.when}</p>
+              <p className="text-muted-foreground">
+                {item.customerId ? (
+                  <Link href={`/klanten/${item.customerId}`} className="underline">{item.customerName}</Link>
+                ) : (
+                  item.customerName
+                )}
+                {" · "}
+                {item.when}
+              </p>
             </li>
           ))}
         </ul>

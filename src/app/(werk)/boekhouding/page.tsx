@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/lib/client/api";
 import { formatEuro, parseEuroToCents } from "@/lib/domain/money";
-import type { Appointment, Expense, Invoice } from "@/lib/domain/types";
+import type { Appointment, Expense, Invoice, PaymentStatus } from "@/lib/domain/types";
+import { PAYMENT_STATUSES, PAYMENT_STATUS_LABEL } from "@/lib/domain/types";
 import { SEND_STATUS_LABEL } from "@/lib/peppol/spec";
 
 export default function BooksPage() {
@@ -34,6 +35,20 @@ export default function BooksPage() {
   useEffect(() => {
     load();
   }, []);
+
+  async function changePayment(invoice: Invoice, paymentStatus: PaymentStatus) {
+    setError(null);
+    try {
+      await api(`/api/facturen/${invoice.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ paymentStatus }),
+      });
+      setNotice(`Betaalstatus van ${invoice.number} staat op ${PAYMENT_STATUS_LABEL[paymentStatus]}.`);
+      load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Betaalstatus bijwerken mislukt.");
+    }
+  }
 
   async function book() {
     const amountCents = parseEuroToCents(amount);
@@ -100,13 +115,28 @@ export default function BooksPage() {
         {invoices && invoices.length === 0 ? <p className="mt-2 text-sm text-muted-foreground">Nog geen facturen. Maak er een vanaf een verstuurde offerte.</p> : null}
         <ul className="mt-3 grid gap-2">
           {(invoices ?? []).map((invoice) => (
-            <li key={invoice.id}>
-              <Link href={`/facturen/${invoice.id}`} className="block rounded-xl border border-border bg-card px-4 py-3 text-sm hover:border-primary/40">
-                <p className="font-medium">{invoice.number} · {invoice.customerName}{invoice.example ? " · voorbeeld" : ""}</p>
-                <p className="text-muted-foreground">
-                  {formatEuro(invoice.totalCents)} incl. btw · {SEND_STATUS_LABEL[invoice.sendStatus ?? "niet_verstuurd"]}
-                </p>
-              </Link>
+            <li key={invoice.id} className="rounded-xl border border-border bg-card px-4 py-3 text-sm">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <Link href={`/facturen/${invoice.id}`} className="hover:underline">
+                  <p className="font-medium">{invoice.number} · {invoice.customerName}{invoice.example ? " · voorbeeld" : ""}</p>
+                  <p className="text-muted-foreground">
+                    {formatEuro(invoice.totalCents)} incl. btw · {SEND_STATUS_LABEL[invoice.sendStatus ?? "niet_verstuurd"]} · {PAYMENT_STATUS_LABEL[invoice.paymentStatus ?? "open"]}
+                  </p>
+                </Link>
+                <label className="text-xs text-muted-foreground">
+                  Betaalstatus
+                  <select
+                    aria-label={`Betaalstatus van ${invoice.number}`}
+                    className="mt-1 h-10 w-full rounded-lg border border-input bg-transparent px-2 text-sm text-foreground sm:w-44"
+                    value={invoice.paymentStatus ?? "open"}
+                    onChange={(event) => void changePayment(invoice, event.target.value as PaymentStatus)}
+                  >
+                    {PAYMENT_STATUSES.map((status) => (
+                      <option key={status} value={status}>{PAYMENT_STATUS_LABEL[status]}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
             </li>
           ))}
         </ul>

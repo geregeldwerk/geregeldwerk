@@ -166,6 +166,9 @@ export function createInvoiceFromQuote(input: {
       transmissionId: null,
       sentAt: null,
       sendMessage: null,
+      customerId: input.quote.customerId ?? null,
+      paymentStatus: "open",
+      paymentUpdatedAt: now.toISOString(),
     },
   };
 }
