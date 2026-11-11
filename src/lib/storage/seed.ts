@@ -352,5 +352,8 @@ export function createSeedData(now = new Date("2026-03-16T09:00:00.000Z")): Stor
     appointments: [],
     posts,
     leads,
+    subscription: null,
+    billingPurchases: [],
+    processedStripeEvents: [],
   };
 }

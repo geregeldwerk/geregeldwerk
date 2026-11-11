@@ -176,7 +176,7 @@ export default function LandingPage() {
         <section id="prijzen" className="mx-auto w-full max-w-6xl scroll-mt-28 px-4 py-12">
           <h2 className="text-3xl tracking-tight sm:text-4xl">Prijzen</h2>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Vier pakketten. Jaarlijks scheelt twee maanden. De knoppen openen GeregeldWerk; er is nog geen betaalstap.
+            Vier pakketten. Jaarlijks scheelt twee maanden. De pakketknoppen openen de Stripe-testkassa. Enterprise blijft contact.
           </p>
           <div className="mt-8">
             <PricingSection catalog={billingCatalog} />

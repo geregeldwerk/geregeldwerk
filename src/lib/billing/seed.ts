@@ -81,7 +81,8 @@ const plans: Plan[] = [
       ["offertehistorie", "offertehistorie"],
       ["basisdashboard", "basisdashboard"],
     ]),
-    cta: { label: "Probeer gratis", href: "/app" },
+    cta: { label: "Kies Starter", href: "/api/stripe/checkout" },
+    stripeLookupKey: { month: "starter_monthly", year: "starter_yearly" },
   },
   {
     id: "professional",
@@ -104,7 +105,8 @@ const plans: Plan[] = [
       ["conversieoverzicht", "conversieoverzicht"],
       ["klantenbeheer-uitgebreid", "uitgebreid klantenbeheer en statistieken"],
     ]),
-    cta: { label: "Probeer gratis", href: "/app" },
+    cta: { label: "Kies Professional", href: "/api/stripe/checkout" },
+    stripeLookupKey: { month: "professional_monthly", year: "professional_yearly" },
   },
   {
     id: "business",
@@ -131,7 +133,8 @@ const plans: Plan[] = [
       ["portaal-domein", "eigen aanvraagportaal-domein"],
       ["prioriteit-support", "prioriteit support"],
     ]),
-    cta: { label: "Probeer gratis", href: "/app" },
+    cta: { label: "Kies Business", href: "/api/stripe/checkout" },
+    stripeLookupKey: { month: "business_monthly", year: "business_yearly" },
   },
   {
     id: "enterprise",
@@ -153,19 +156,20 @@ const plans: Plan[] = [
       ["infrastructuur", "maatwerk infrastructuur"],
     ]),
     cta: { label: "Neem contact op", href: "#contact" },
+    stripeLookupKey: null,
   },
 ];
 
 const addons: Addon[] = [
-  { id: "extra-user", name: "extra gebruiker", priceCents: 500, prefix: "", suffix: "/mnd", wholeEuros: true },
-  { id: "extra-company", name: "extra bedrijfsprofiel", priceCents: 1495, prefix: "", suffix: "/mnd", wholeEuros: false },
-  { id: "whatsapp-starter", name: "WhatsApp bij Starter", priceCents: 995, prefix: "", suffix: "/mnd", wholeEuros: false },
-  { id: "credits-50", name: "50 extra AI-credits", priceCents: 995, prefix: "", suffix: "", wholeEuros: false },
-  { id: "credits-150", name: "150 extra AI-credits", priceCents: 2495, prefix: "", suffix: "", wholeEuros: false },
-  { id: "credits-500", name: "500 extra AI-credits", priceCents: 5995, prefix: "", suffix: "", wholeEuros: false },
-  { id: "storage-10", name: "10 GB extra opslag", priceCents: 495, prefix: "", suffix: "/mnd", wholeEuros: false },
-  { id: "onboarding", name: "persoonlijke onboarding", priceCents: 9900, prefix: "", suffix: " eenmalig", wholeEuros: true },
-  { id: "custom-automation", name: "maatwerk automatisering", priceCents: 14900, prefix: "vanaf ", suffix: "", wholeEuros: true },
+  { id: "extra-user", name: "extra gebruiker", priceCents: 500, prefix: "", suffix: "/mnd", wholeEuros: true, stripeLookupKey: "addon_extra_user", stripeMode: "subscription" },
+  { id: "extra-company", name: "extra bedrijfsprofiel", priceCents: 1495, prefix: "", suffix: "/mnd", wholeEuros: false, stripeLookupKey: "addon_extra_profile", stripeMode: "subscription" },
+  { id: "whatsapp-starter", name: "WhatsApp bij Starter", priceCents: 995, prefix: "", suffix: "/mnd", wholeEuros: false, stripeLookupKey: "addon_whatsapp_starter", stripeMode: "subscription" },
+  { id: "credits-50", name: "50 extra AI-credits", priceCents: 995, prefix: "", suffix: "", wholeEuros: false, stripeLookupKey: "addon_credits_50", stripeMode: "payment" },
+  { id: "credits-150", name: "150 extra AI-credits", priceCents: 2495, prefix: "", suffix: "", wholeEuros: false, stripeLookupKey: "addon_credits_150", stripeMode: "payment" },
+  { id: "credits-500", name: "500 extra AI-credits", priceCents: 5995, prefix: "", suffix: "", wholeEuros: false, stripeLookupKey: "addon_credits_500", stripeMode: "payment" },
+  { id: "storage-10", name: "10 GB extra opslag", priceCents: 495, prefix: "", suffix: "/mnd", wholeEuros: false, stripeLookupKey: "addon_storage_10gb", stripeMode: "subscription" },
+  { id: "onboarding", name: "persoonlijke onboarding", priceCents: 9900, prefix: "", suffix: " eenmalig", wholeEuros: true, stripeLookupKey: "addon_onboarding", stripeMode: "payment" },
+  { id: "custom-automation", name: "maatwerk automatisering", priceCents: 14900, prefix: "vanaf ", suffix: "", wholeEuros: true, stripeLookupKey: null, stripeMode: null },
 ];
 
 export const billingCatalog: BillingCatalog = {
@@ -179,6 +183,10 @@ export const billingCatalog: BillingCatalog = {
   plans,
   addons,
 };
+
+export function lookupKeyForPlan(plan: Plan, interval: "month" | "year"): string | null {
+  return plan.stripeLookupKey?.[interval] ?? null;
+}
 
 export function getPlan(planId: Plan["id"]): Plan {
   const plan = billingCatalog.plans.find((item) => item.id === planId);

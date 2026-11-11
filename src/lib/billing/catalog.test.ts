@@ -19,8 +19,24 @@ describe("prijscatalogus", () => {
       highlighted: true,
       badge: "Populair",
     });
-    expect(billingCatalog.yearlyDiscountLabel).toBe("2 maanden gratis");
+    expect(billingCatalog.plans.find((plan) => plan.id === "starter")?.stripeLookupKey).toEqual({
+      month: "starter_monthly",
+      year: "starter_yearly",
+    });
+    expect(billingCatalog.plans.find((plan) => plan.id === "enterprise")?.stripeLookupKey).toBeNull();
+    expect(billingCatalog.addons.map((addon) => addon.stripeLookupKey)).toEqual([
+      "addon_extra_user",
+      "addon_extra_profile",
+      "addon_whatsapp_starter",
+      "addon_credits_50",
+      "addon_credits_150",
+      "addon_credits_500",
+      "addon_storage_10gb",
+      "addon_onboarding",
+      null,
+    ]);
     expect(billingCatalog.vatNote).toBe("Alle prijzen exclusief btw");
+    expect(billingCatalog.yearlyDiscountLabel).toBe("2 maanden gratis");
   });
 
   it("toont de bedragen in de afgesproken schrijfwijze", () => {

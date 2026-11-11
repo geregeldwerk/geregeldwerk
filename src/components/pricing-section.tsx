@@ -1,13 +1,36 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { BrandCheck } from "@/components/brand-check";
 import { formatAddonPrice, formatPriceCents } from "@/lib/billing/format";
 import type { BillingCatalog, BillingInterval, Plan } from "@/lib/billing/types";
 
 export function PricingSection({ catalog }: { catalog: BillingCatalog }) {
   const [interval, setInterval] = useState<BillingInterval>("month");
+  const [busy, setBusy] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+
+  async function checkout(body: { kind: "plan"; planId: string; interval: BillingInterval } | { kind: "addon"; addonId: string }, key: string) {
+    setBusy(key);
+    setMessage(null);
+    try {
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const payload = (await response.json()) as { url?: string; error?: string };
+      if (!response.ok || !payload.url) {
+        setMessage(payload.error ?? "Afrekenen lukt nu niet.");
+        return;
+      }
+      window.location.assign(payload.url);
+    } catch {
+      setMessage("Afrekenen lukt nu niet.");
+    } finally {
+      setBusy(null);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-10">
@@ -25,6 +48,11 @@ export function PricingSection({ catalog }: { catalog: BillingCatalog }) {
         </div>
         <p className="text-sm text-muted-foreground">{catalog.vatNote}</p>
       </div>
+      {message ? (
+        <p className="rounded-xl border border-border bg-card px-4 py-3 text-sm" role="status">
+          {message}
+        </p>
+      ) : null}
 
       <ul className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
         {catalog.plans.map((plan) => (
@@ -63,7 +91,12 @@ export function PricingSection({ catalog }: { catalog: BillingCatalog }) {
                   </li>
                 ))}
               </ul>
-              <PlanCta plan={plan} mailto={catalog.enterpriseMailto} />
+              <PlanCta
+                plan={plan}
+                mailto={catalog.enterpriseMailto}
+                busy={busy === plan.id}
+                onCheckout={() => void checkout({ kind: "plan", planId: plan.id, interval }, plan.id)}
+              />
             </article>
           </li>
         ))}
@@ -103,13 +136,25 @@ export function PricingSection({ catalog }: { catalog: BillingCatalog }) {
       <div id="uitbreidingen" className="scroll-mt-28">
         <h3 className="font-heading text-2xl">Uitbreidingen</h3>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Voor alle pakketten. Je voegt ze later toe; afrekenen zit nog niet op deze pagina.
+          Voor alle pakketten. Een knop opent de Stripe-testkassa. Maatwerk blijft op aanvraag.
         </p>
         <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {catalog.addons.map((addon) => (
             <li key={addon.id} className="rounded-2xl border border-border bg-card px-4 py-3">
               <p className="text-sm">{addon.name}</p>
               <p className="mt-1 text-lg font-semibold">{formatAddonPrice(addon)}</p>
+              {addon.stripeLookupKey ? (
+                <button
+                  type="button"
+                  className="mt-3 inline-flex h-9 items-center rounded-lg border border-border px-3 text-sm font-semibold hover:border-primary/40 disabled:opacity-60"
+                  disabled={busy === addon.id}
+                  onClick={() => void checkout({ kind: "addon", addonId: addon.id }, addon.id)}
+                >
+                  {busy === addon.id ? "Even naar de kassa…" : "Afrekenen"}
+                </button>
+              ) : (
+                <p className="mt-3 text-sm text-muted-foreground">Op aanvraag</p>
+              )}
             </li>
           ))}
         </ul>
@@ -157,10 +202,20 @@ function cellValue(cell: Plan["limits"][number]): string {
   return String(cell.value);
 }
 
-function PlanCta({ plan, mailto }: { plan: Plan; mailto: string }) {
+function PlanCta({
+  plan,
+  mailto,
+  busy,
+  onCheckout,
+}: {
+  plan: Plan;
+  mailto: string;
+  busy: boolean;
+  onCheckout: () => void;
+}) {
   const className = plan.highlighted
-    ? "mt-6 inline-flex h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground"
-    : "mt-6 inline-flex h-11 items-center justify-center rounded-lg border border-border bg-background px-4 text-sm font-semibold hover:border-primary/40";
+    ? "mt-6 inline-flex h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+    : "mt-6 inline-flex h-11 items-center justify-center rounded-lg border border-border bg-background px-4 text-sm font-semibold hover:border-primary/40 disabled:opacity-60";
   if (plan.id === "enterprise") {
     return (
       <a href={mailto} className={className}>
@@ -169,8 +224,8 @@ function PlanCta({ plan, mailto }: { plan: Plan; mailto: string }) {
     );
   }
   return (
-    <Link href={plan.cta.href} className={className}>
-      {plan.cta.label}
-    </Link>
+    <button type="button" className={className} disabled={busy} onClick={onCheckout}>
+      {busy ? "Even naar de kassa…" : plan.cta.label}
+    </button>
   );
 }

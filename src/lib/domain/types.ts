@@ -1,3 +1,5 @@
+import type { BillingPurchase, CompanySubscription } from "@/lib/billing/types";
+
 export const QUOTE_STATUSES = ["concept", "verstuurd", "geaccepteerd"] as const;
 
 export type QuoteStatus = (typeof QUOTE_STATUSES)[number];
@@ -332,6 +334,10 @@ export interface StoreData {
   appointments: Appointment[];
   posts: SocialPost[];
   leads: LeadEntry[];
+  /** Eén bedrijf in deze opslag. Meerdere tenants komen later. Ontbreekt in oudere bestanden. */
+  subscription?: CompanySubscription | null;
+  billingPurchases?: BillingPurchase[];
+  processedStripeEvents?: string[];
 }
 
 export interface Totals {

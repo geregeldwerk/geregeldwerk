@@ -62,6 +62,8 @@ export interface Plan {
   includesPlanId: PlanId | null;
   limits: PlanLimit[];
   features: PlanFeature[];
+  /** null bij Enterprise: geen Stripe-prijs. */
+  stripeLookupKey: { month: string; year: string } | null;
   cta: { label: string; href: string };
 }
 
@@ -75,6 +77,31 @@ export interface Addon {
   suffix: string;
   /** Hele euro's zonder ,00. */
   wholeEuros: boolean;
+  /** null als deze uitbreiding niet in Stripe staat, zoals maatwerk. */
+  stripeLookupKey: string | null;
+  /** recurring = subscription, one_time = payment. */
+  stripeMode: "subscription" | "payment" | null;
+}
+
+export interface CompanySubscription {
+  stripeSubscriptionId: string;
+  stripeCustomerId: string;
+  planId: "starter" | "professional" | "business";
+  interval: BillingInterval;
+  status: string;
+  lookupKey: string | null;
+  currentPeriodStart: string | null;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+  updatedAt: string;
+}
+
+export interface BillingPurchase {
+  checkoutSessionId: string;
+  addonId: string;
+  lookupKey: string;
+  stripeCustomerId: string | null;
+  paidAt: string;
 }
 
 export interface BillingCatalog {
