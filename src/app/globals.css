@@ -159,7 +159,6 @@
     background-image:
       radial-gradient(ellipse at 8% -10%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 36rem),
       radial-gradient(ellipse at 100% 0%, color-mix(in srgb, #58da98 12%, transparent), transparent 28rem);
-    background-attachment: fixed;
   }
   html {
     @apply font-sans;
@@ -188,6 +187,16 @@
   summary:focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
+  }
+  input[aria-invalid="true"],
+  select[aria-invalid="true"],
+  textarea[aria-invalid="true"] {
+    border-color: var(--destructive);
+  }
+  input[aria-invalid="true"]:focus-visible,
+  select[aria-invalid="true"]:focus-visible,
+  textarea[aria-invalid="true"]:focus-visible {
+    outline-color: var(--destructive);
   }
   ::selection {
     background: color-mix(in srgb, var(--primary) 35%, transparent);
@@ -248,6 +257,17 @@
 
 .rise-in {
   animation: rise-in 220ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @media print {

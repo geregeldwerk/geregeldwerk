@@ -3,9 +3,14 @@ import { Button } from "@/components/ui/button";
 
 export function LoadingNote({ label }: { label: string }) {
   return (
-    <p className="text-sm text-muted-foreground" role="status">
-      {label}
-    </p>
+    <div className="rounded-2xl border border-border bg-card px-5 py-6" role="status">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <div className="mt-4 grid gap-2" aria-hidden>
+        <div className="h-3 w-2/3 animate-pulse rounded-full bg-muted" />
+        <div className="h-3 w-full animate-pulse rounded-full bg-muted" />
+        <div className="h-3 w-5/6 animate-pulse rounded-full bg-muted" />
+      </div>
+    </div>
   );
 }
 

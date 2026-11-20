@@ -20,7 +20,7 @@ export default function WerkLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-5 pb-28 md:pb-10">{children}</main>
+      <main id="inhoud" className="mx-auto w-full max-w-6xl flex-1 px-4 py-5 pb-28 md:pb-10">{children}</main>
       <footer className="mx-auto w-full max-w-6xl px-4 pb-28 text-xs leading-5 text-muted-foreground md:pb-8">
         GeregeldWerk is een product van CodedByDefault. Deze prototype draait lokaal. In mock-modus
         verlaat een bericht je computer niet. Zet hier geen echte klantgegevens in (AVG).{" "}

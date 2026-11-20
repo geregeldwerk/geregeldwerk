@@ -3,7 +3,7 @@ import { BrandLockup } from "@/components/brand-lockup";
 
 export default function PaymentCanceledPage() {
   return (
-    <main className="mx-auto flex min-h-full w-full max-w-xl flex-col justify-center gap-6 px-4 py-16">
+    <main id="inhoud" className="mx-auto flex min-h-full w-full max-w-xl flex-col justify-center gap-6 px-4 py-16">
       <BrandLockup href="/" />
       <div>
         <p className="text-xs font-semibold tracking-[0.16em] text-primary uppercase">Betaling</p>

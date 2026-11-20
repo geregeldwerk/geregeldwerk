@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { TrustBadges } from "@/components/trust-badges";
 import { billingCatalog } from "@/lib/billing/seed";
 import { launchMode } from "@/lib/launch";
+import { SectionNav } from "@/components/section-nav";
 import { WaitlistForm } from "@/components/waitlist-form";
 
 export const metadata: Metadata = {
@@ -66,39 +67,32 @@ export default function LandingPage() {
           </nav>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Link href="/app" className={waitlist ? "hidden text-sm text-muted-foreground underline-offset-4 hover:underline sm:inline" : "hidden h-10 items-center rounded-lg border border-border px-3 text-sm font-semibold sm:inline-flex"}>
+            <Link href="/app" className={waitlist ? "hidden text-sm text-muted-foreground underline-offset-4 hover:underline sm:inline" : "hidden h-11 items-center rounded-lg border border-border px-3 text-sm font-semibold hover:bg-secondary sm:inline-flex"}>
               Inloggen
             </Link>
             {waitlist ? (
-              <a href="#wachtlijst" className="inline-flex h-10 shrink-0 items-center rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground">
+              <a href="#wachtlijst" className="inline-flex h-11 shrink-0 items-center rounded-lg bg-primary px-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:px-3">
                 Zet me op de wachtlijst
               </a>
             ) : (
-              <Link href="/app" className="inline-flex h-10 shrink-0 items-center rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground">
+              <Link href="/app" className="inline-flex h-11 shrink-0 items-center rounded-lg bg-primary px-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:px-3">
                 Naar de app
               </Link>
             )}
           </div>
         </div>
-        <nav aria-label="Pagina" className="flex gap-4 overflow-x-auto px-4 pb-3 text-sm lg:hidden">
-          <Link href="/app" className="shrink-0 text-muted-foreground">Inloggen</Link>
-          <a href="#wachtlijst" className="shrink-0">Early access</a>
-          <a href="#waarom" className="shrink-0">Waarom</a>
-          <a href="#werking" className="shrink-0">Zo werkt het</a>
-          <a href="#prijzen" className="shrink-0">Prijzen</a>
-          <a href="#uitbreidingen" className="shrink-0">Uitbreidingen</a>
-          <a href="#contact" className="shrink-0">Contact</a>
-        </nav>
+        <SectionNav />
       </header>
 
-      <main>
+      <main id="inhoud">
         <section className="relative overflow-hidden">
           <div className="absolute inset-0 hidden md:block">
             <Image
               src="/landing/hero-vakman.webp"
-              alt=""
+              alt="Vakman bekijkt op zijn telefoon hoe een bericht een offerte wordt"
               fill
-              priority
+              preload
+              fetchPriority="high"
               sizes="100vw"
               className="object-cover object-[72%_center]"
             />
@@ -118,15 +112,15 @@ export default function LandingPage() {
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 {waitlist ? (
-                  <a href="#wachtlijst" className="inline-flex h-12 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground">
+                  <a href="#wachtlijst" className="inline-flex h-12 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90">
                     Schrijf je in voor early access
                   </a>
                 ) : (
                   <>
-                    <Link href="/app" className="inline-flex h-12 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground">
+                    <Link href="/app" className="inline-flex h-12 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90">
                       Naar de app
                     </Link>
-                    <Link href="/app" className="inline-flex h-12 items-center justify-center rounded-lg border border-border bg-background px-5 text-sm font-semibold">
+                    <Link href="/app" className="inline-flex h-12 items-center justify-center rounded-lg border border-border bg-background px-5 text-sm font-semibold hover:bg-secondary">
                       Inloggen
                     </Link>
                   </>
@@ -140,8 +134,8 @@ export default function LandingPage() {
               alt="Vakman bekijkt op zijn telefoon hoe een bericht een offerte wordt"
               width={1920}
               height={1080}
-              priority
-              sizes="100vw"
+              loading="lazy"
+              sizes="(min-width: 768px) 100vw, calc(100vw - 2rem)"
               className="aspect-video w-full rounded-3xl object-cover object-[68%_center]"
             />
           </div>
@@ -233,7 +227,7 @@ export default function LandingPage() {
           </p>
           <a
             href={billingCatalog.enterpriseMailto}
-            className="mt-6 inline-flex h-12 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground"
+            className="mt-6 inline-flex h-12 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Neem contact op
           </a>
@@ -279,8 +273,8 @@ export default function LandingPage() {
 
 function Faq({ question, children }: { question: string; children: React.ReactNode }) {
   return (
-    <details className="rounded-2xl border border-border bg-card px-4 py-3">
-      <summary className="cursor-pointer font-medium">{question}</summary>
+    <details className="rounded-2xl border border-border bg-card px-4 py-1">
+      <summary className="flex min-h-11 cursor-pointer items-center font-medium">{question}</summary>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">{children}</p>
     </details>
   );
