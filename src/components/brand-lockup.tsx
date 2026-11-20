@@ -12,7 +12,7 @@ export function BrandLockup({
   className?: string;
 }) {
   return (
-    <Link href={href} className={cn("flex shrink-0 items-center", className)}>
+    <Link href={href} aria-label="GeregeldWerk" className={cn("flex shrink-0 items-center", className)}>
       <Image
         src="/brand/logo-licht-transparant.png"
         alt="GeregeldWerk"
